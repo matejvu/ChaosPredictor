@@ -4,6 +4,7 @@ Created on Sun Aug 17 15:53:30 2025
 
 @author: matej
 """
+
 import h5py
 import numpy as np
 import attractors_catalog as ac
@@ -16,8 +17,6 @@ functions3D = {"lorenz" : ac.lorenz3D,
                "sprott" : ac.sprott3D}
 
 def generate_dataset(attractor, D = 2, particles = 10, steps = 100000, discard = 1000, radius = 1.0, dt = 0.01):
-    
-    # def sprott3D(x, y, z, steps=100000, discard=1000, dt=0.01)
     
     xs_all = np.empty((particles, steps - discard))
     ys_all = np.empty((particles, steps - discard))
@@ -45,27 +44,30 @@ def generate_dataset(attractor, D = 2, particles = 10, steps = 100000, discard =
             print("Invalid dimension D = "+str(D))
             return
                     
-
     with h5py.File("./datasets_h5/"+attractor+"_dataset.h5", "w") as f:
         f.create_dataset("x", data=xs_all)
         f.create_dataset("y", data=ys_all)
         f.create_dataset("z", data=zs_all)
         f.create_dataset("init_conditions", data=init_conditions)
         f.attrs["system"] = attractor
+        f.attrs["dimension"] = D
         f.attrs["dt"] = dt
 
     np.savez(
-    "./datasets_npz/"+attractor+"_dataset.npz",
-    dt=dt,            
-    X=xs_all,
-    Y=ys_all,
-    Z=zs_all,
-    init=init_conditions
+        "./datasets_npz/"+attractor+"_dataset.npz",
+        dt=dt,
+        dimension=D,            
+        X=xs_all,
+        Y=ys_all,
+        Z=zs_all,
+        init=init_conditions
     )
+    print(f"Saved dataset at {out_path}")
 
     return 
 
-generate_dataset("clifford", 2, 10, radius = 2.0)
+if __name__ == "__main__":
+    generate_dataset("lorenz", 3, 10, radius = 20.0)
 
     
     
