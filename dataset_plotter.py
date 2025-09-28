@@ -20,57 +20,58 @@ def plot_dataset(path, particles=1, time=-1):
     init = data["init"]
     D = data["dimension"]
 
+    if particles>init.shape[0]:
+        print(f"There is less than {particles} particles in dataset")
+        return
     
     print(f"Loaded dataset from {path}")
     print(f"Dimension: {D}, dt={dt}, init_conditions={init.shape}")
 
-    if D == 3:
-        fig = go.Figure()
-        for p in range(particles):
+    fig = go.Figure()
+    for p in range(particles):
+        
+        line_dict = dict(
+            color=palette[p % len(palette)],
+            width=1.5
+        )
+        
+        if D == 3:
             xs = data["X"][p][:time]
             ys = data["Y"][p][:time]
             zs = data["Z"][p][:time]
             fig.add_trace(go.Scatter3d(
                 x=xs, y=ys, z=zs,
                 mode="lines",
-                line=dict(
-                    color=palette[p % len(palette)],
-                    width=1.5
-                ),
+                line=line_dict,
                 name=f"Particle {p+1}"
             ))
-        fig.update_layout(
-            scene=dict(
-                xaxis_title="X",
-                yaxis_title="Y",
-                zaxis_title="Z"
-            ),
-            width=1024, height=1024
-        )
-    else:
-        fig = go.Figure()
-        for p in range(particles):
+            fig.update_layout(
+                scene=dict(
+                    xaxis_title="X",
+                    yaxis_title="Y",
+                    zaxis_title="Z"
+                ),
+                width=1024, height=1024
+            )
+        else:
             xs = data["X"][p][:time]
             ys = data["Y"][p][:time]
             fig.add_trace(go.Scatter(
                 x=xs, y=ys,
                 mode="lines",
-                line=dict(
-                    color=palette[p % len(palette)],
-                    width=1.5
-                ),
+                line=line_dict,
                 name=f"Particle {p+1}"
             ))
-        fig.update_layout(
-            width=700, height=700,
-            xaxis=dict(showgrid=False, zeroline=False),
-            yaxis=dict(showgrid=False, zeroline=False),
-        )
+            fig.update_layout(
+                width=700, height=700,
+                xaxis=dict(showgrid=False, zeroline=False),
+                yaxis=dict(showgrid=False, zeroline=False),
+            )
 
     fig.show()
 
 if __name__ == "__main__":
-    plot_dataset("./datasets_npz_awng/lorenz_dataset_00dB.npz",time=500, particles=3)
+    plot_dataset("./datasets_npz_awng/lorenz_dataset_0dB.npz", particles=3, time=1000 )
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_40dB.npz", particles=2)
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_30dB.npz", particles=4)
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_20dB.npz", particles=3)
