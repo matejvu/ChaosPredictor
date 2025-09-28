@@ -62,12 +62,12 @@ def generate_dataset(attractor, D = 2, particles = 10, steps = 100000, discard =
         Z=zs_all,
         init=init_conditions
     )
-    print(f"Saved dataset at {out_path}")
+    print(f"Saved dataset at ./datasets_npz/"+attractor+"_dataset.npz")
 
     return 
 
 if __name__ == "__main__":
-    generate_dataset("lorenz", 3, 10, radius = 20.0)
+    generate_dataset("lorenz", 3, 10, radius = 2.0)
 
     
     

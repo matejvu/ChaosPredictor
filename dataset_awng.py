@@ -9,12 +9,13 @@ import numpy as np
 import h5py
 import os
 
-# Global SNR dictionary (in dB)
 SNR_LEVELS = {
     "0dB" : 0,
     "10dB": 10,
     "20dB": 20,
-    "30dB": 30
+    "30dB": 30,
+    "40dB": 40,
+    "50dB": 50
 }
 
 def add_awgn(signal, snr_db):
