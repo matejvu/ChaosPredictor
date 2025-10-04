@@ -86,9 +86,9 @@ def find_LLE(path, time=100000):
 if __name__ == "__main__":
     #Warning: 2D map might not be supported
     
-    find_LLE("./datasets_npz_awng/lorenz_dataset_0dB.npz", time=10**6 )
-    find_LLE("./datasets_npz_awng/lorenz_dataset_10dB.npz", time=10**6 )
-    find_LLE("./datasets_npz_awng/lorenz_dataset_20dB.npz", time=10**6 )
-    find_LLE("./datasets_npz_awng/lorenz_dataset_30dB.npz", time=10**6 )
-    find_LLE("./datasets_npz_awng/lorenz_dataset_40dB.npz", time=10**6 )
-    find_LLE("./datasets_npz_awng/lorenz_dataset_50dB.npz", time=10**6 )
+    find_LLE("./datasets_npz/lorenz_dataset.npz", time=100000 )
+    # find_LLE("./datasets_npz_awng/lorenz_dataset_10dB.npz", time=10**6 )
+    # find_LLE("./datasets_npz_awng/lorenz_dataset_20dB.npz", time=10**6 )
+    # find_LLE("./datasets_npz_awng/lorenz_dataset_30dB.npz", time=10**6 )
+    # find_LLE("./datasets_npz_awng/lorenz_dataset_40dB.npz", time=10**6 )
+    # find_LLE("./datasets_npz_awng/lorenz_dataset_50dB.npz", time=10**6 )

@@ -70,4 +70,4 @@ def process_dataset(attractor, input_dir="./datasets_npz", output_dir="./dataset
 
 if __name__ == "__main__":
     
-    process_dataset("lorenz")  
+    process_dataset("sprott")  
