@@ -20,7 +20,7 @@ datasets_npz/
 *.docx
 
 #lr alg directory
-llr/
+githubOnogLika/
 
 #tmp from LLE_from_data
 tmp.npy

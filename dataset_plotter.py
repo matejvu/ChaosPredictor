@@ -71,8 +71,8 @@ def plot_dataset(path, particles=1, time=-1):
     fig.show()
 
 if __name__ == "__main__":
-    plot_dataset("./datasets_npz_awng/sprott_dataset_50dB.npz", particles=1 )
-    plot_dataset("./datasets_npz_awng/sprott_dataset_40dB.npz", particles=1)
-    plot_dataset("./datasets_npz_awng/sprott_dataset_30dB.npz", particles=1)
+    plot_dataset("./datasets_npz_awng/lorenz_dataset_50dB.npz", particles=1, time = 660 )
+    # plot_dataset("./datasets_npz_awng/sprott_dataset_40dB.npz", particles=1)
+    # plot_dataset("./datasets_npz_awng/sprott_dataset_30dB.npz", particles=1)
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_20dB.npz", particles=3)
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_10dB.npz", particles=2)

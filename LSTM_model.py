@@ -10,7 +10,9 @@ import torch.optim as optim
 from torch.utils.data import DataLoader, Dataset
 import numpy as np
 
-class Seq2SeqLSTM(nn.Module):
+#model of LSTM with no Teacher Forcing
+
+class LSTMnoTF(nn.Module):
     def __init__(self, input_size, hidden_size, output_size, max_future_steps):
         super().__init__()
         self.max_future_steps = max_future_steps
@@ -20,9 +22,6 @@ class Seq2SeqLSTM(nn.Module):
         #hidden_size - dubina memorije
         
         self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
-        
-        # Decoder (for multi-step prediction)
-        # self.decoder = nn.LSTM(output_size, hidden_size, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     
     def forward(self, x, future_steps=None, teacher_forcing_ratio=0.5):
@@ -45,4 +44,9 @@ class Seq2SeqLSTM(nn.Module):
             prediction_next = self.fc(lstm_out)
             
         
-        return torch.stack(predictions, dim=1)
+        return torch.cat(predictions, dim=1)
+    
+for i in range(20):
+    model = LSTMnoTF(3, i+1, 3, 20)
+    total_params = sum(p.numel() for p in model.parameters())
+    print(f"[{i}]Total number of parameters: {total_params}")
