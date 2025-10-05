@@ -14,6 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 from LSTM_model import LSTMnoTF
+import metrics as mtr
 
 def plot_training_curves(train_losses, val_losses, title = 'Training and Validation Loss'):
     plt.figure(figsize=(10, 6))
@@ -165,24 +166,27 @@ def train_lstm_model(model, train_loader, val_loader, epochs=100, learning_rate=
     return train_losses, val_losses
 
 
-def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key = '', verbose = False):
+def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key = '', td = 1000, verbose = False):
     
     #load data
-    (TrainLD, ValLD, TestLD),(TrainDS, ValDS, TestDS), D = TDatasetFromSeries(path, d, t, batch_size, data_len=10000)
+    (TrainLD, ValLD, TestLD),(TrainDS, ValDS, TestDS), D = TDatasetFromSeries(path, d, t, batch_size, data_len=td)
     
     # Initialize model
     input_size = output_size = D    
-    model = LSTMnoTF(input_size, hidden_size, output_size, t)
+    model = LSTMnoTF(input_size, hidden_size, output_size, t, nlayers=nlayers)
     
     # Print model info
     total_params = sum(p.numel() for p in model.parameters())
     
     print('======================TRAINING==================================================')
-    print(f"Model initialized:")
-    print(f"Hidden size: {hidden_size}")
     print(f"Total parameters: {total_params}")
-    print(f"Input DS shape: {TrainDS.tensors[0].shape}")
-    print(f"Output DS shape: {TrainDS.tensors[1].shape}")
+    print(f"Hidden size: {hidden_size}")
+    print(f"Number of stacked layers: {nlayers}")
+    print(f"Learning rate: {lr}")
+    print(f"Learning decay: {gamma}")
+    print(f"Batch size: {batch_size}")
+    print(f"Input train data shape: {TrainDS.tensors[0].shape}")
+    print(f"Output train data shape: {TrainDS.tensors[1].shape}")
     
     # Train the model
     print("\nStarting training...")
@@ -193,21 +197,35 @@ def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key =
     
     #PLot
     if verbose:
-        t = 'Traning Loss ['+key+']'
-        plot_training_curves(train_losses, val_losses, t)
+        plot_training_curves(train_losses, val_losses, f"Training Loss [{key}]")
     
     # Test the trained model
     print("\nTesting trained model...")
     test_loss = 0.0
+    all_predictions = []
+    all_targets = []
     
     with torch.no_grad():
         for data, target in TestLD:
             predictions = model(data, future_steps=target.shape[1])
             loss = nn.functional.mse_loss(predictions, target)
             test_loss += loss.item()
+            
+            # Store batch results
+            all_predictions.append(predictions.cpu().numpy())
+            all_targets.append(target.cpu().numpy())
     
+    all_predictions = np.concatenate(all_predictions, axis=0)
+    all_targets = np.concatenate(all_targets, axis=0)
+
+    r2_score = mtr.R2(all_predictions, all_targets)
+    mse = np.mean((all_predictions-all_targets)**2)
+    
+    print(f"Test R² Score: {r2_score}")
+    print(f'Test MSE: {mse}')
+    print(f"Shapes - Predictions: {all_predictions.shape}, Targets: {all_targets.shape}")
     avg_test_loss = test_loss / len(TestLD)
-    print(f'Avg. test loss: {avg_test_loss}')
-    return avg_test_loss
+    print(f'Test avg. loss: {avg_test_loss}')
+    return avg_test_loss, mse, r2_score
 
 

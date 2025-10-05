@@ -13,7 +13,7 @@ import numpy as np
 #model of LSTM with no Teacher Forcing
 
 class LSTMnoTF(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, max_future_steps):
+    def __init__(self, input_size, hidden_size, output_size, max_future_steps, nlayers = 1):
         super().__init__()
         self.max_future_steps = max_future_steps
         
@@ -21,7 +21,7 @@ class LSTMnoTF(nn.Module):
         #output_size - broj feature-ova
         #hidden_size - dubina memorije
         
-        self.lstm = nn.LSTM(input_size, hidden_size, batch_first=True)
+        self.lstm = nn.LSTM(input_size, hidden_size, num_layers=nlayers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     
     def forward(self, x, future_steps=None, teacher_forcing_ratio=0.5):
