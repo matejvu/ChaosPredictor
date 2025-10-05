@@ -33,9 +33,6 @@ def plot_training_curves(train_losses, val_losses, title = 'Training and Validat
     plt.show()
 
 
-
-
-
 #=========================================
 #   ARGS
 #       path - path to npz file
@@ -168,18 +165,20 @@ def train_lstm_model(model, train_loader, val_loader, epochs=100, learning_rate=
     return train_losses, val_losses
 
 
-def train(path, d, t, batch_size, hidden_size, epochs, lr, criterion, verbose = False):
+def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key = '', verbose = False):
     
     #load data
-    (TrainLD, ValLD, TestLD),(TrainDS, ValDS, TestDS), D = TDatasetFromSeries(path, d, t, batch_size)
+    (TrainLD, ValLD, TestLD),(TrainDS, ValDS, TestDS), D = TDatasetFromSeries(path, d, t, batch_size, data_len=10000)
     
     # Initialize model
     input_size = output_size = D    
-    model = LSTMnoTF(input_size, hidden_size, output_size, max_future_steps)
+    model = LSTMnoTF(input_size, hidden_size, output_size, t)
     
     # Print model info
     total_params = sum(p.numel() for p in model.parameters())
-    print(f"\nModel initialized:")
+    
+    print('======================TRAINING==================================================')
+    print(f"Model initialized:")
     print(f"Hidden size: {hidden_size}")
     print(f"Total parameters: {total_params}")
     print(f"Input DS shape: {TrainDS.tensors[0].shape}")
@@ -188,14 +187,14 @@ def train(path, d, t, batch_size, hidden_size, epochs, lr, criterion, verbose = 
     # Train the model
     print("\nStarting training...")
     train_losses, val_losses = train_lstm_model(
-        model, TrainLD, ValLD, epochs=epochs, learning_rate=lr
+        model, TrainLD, ValLD, epochs=epochs, learning_rate=lr, gamma = gamma
     )
     
     
     #PLot
     if verbose:
-        t = 'Traning['++']'
-        plot_training_curves(train_losses, val_losses)
+        t = 'Traning Loss ['+key+']'
+        plot_training_curves(train_losses, val_losses, t)
     
     # Test the trained model
     print("\nTesting trained model...")
@@ -209,30 +208,6 @@ def train(path, d, t, batch_size, hidden_size, epochs, lr, criterion, verbose = 
     
     avg_test_loss = test_loss / len(TestLD)
     print(f'Avg. test loss: {avg_test_loss}')
-    
+    return avg_test_loss
 
 
-
-path = "./datasets_npz/lorenz_dataset.npz"
-data = np.load(path)
-dt = data["dt"]
-init = data["init"]
-D = data["dimension"]
-
-
-lags = {2, 4, 6}
-batch = {16, 32, 64}
-num_layers = {1,2,3}
-
-d = 4
-t = 10
-
-lr = 0.001
-input_size = 1
-output_size = 1
-max_future_steps = 10
-hidden_size = 12  # You can test different sizes
-batch_size = 4
-epochs = 20
-
-train(path, d, t, batch_size, hidden_size, epochs,lr,  None, True)
