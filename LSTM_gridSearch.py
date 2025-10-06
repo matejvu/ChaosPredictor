@@ -14,14 +14,14 @@ import time
 lags = {4, 8}
 batches = {16, 32, 64}
 num_layers = {1,2,4}
-hidden_sizes = {6, 12, 24}
+hidden_sizes = {6, 12}
 learning_rates = { 0.1, 0.01, 0.001}
 decays = {0, 0.001}
 
 #=========PARAMETERS==========
 
 lag = 4
-h = 200
+h = 100
 batch_size = 16
 hidden_size = 12
 epochs = 150
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     losses = {}
     key=''
     time_start = time.time()
-    
+
     for lag in lags: 
         for num_layer in num_layers:
             for hidden_size in hidden_sizes:
