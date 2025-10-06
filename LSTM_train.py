@@ -31,7 +31,8 @@ def plot_training_curves(train_losses, val_losses, title = 'Training and Validat
     plt.grid(True, alpha=0.3)
     # plt.yscale('log')  # Useful if loss values vary widely
     plt.tight_layout()
-    plt.show()
+    #plt.show()
+    plt.savefig("./training_plots/"+title+".png")
 
 
 #=========================================
@@ -112,6 +113,14 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
 #       val_losses
 #=========================================
 def train_lstm_model(model, train_loader, val_loader, epochs=100, learning_rate=0.001, gamma = 0.95):
+    if torch.cuda.is_available():
+        print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
+        device = torch.device('cuda')
+    else:
+        print("No GPU available. Training will run on CPU.")
+        device = torch.device('cpu')
+    model = model.to(device)    
+
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = ExponentialLR(optimizer, gamma=gamma)
@@ -126,6 +135,8 @@ def train_lstm_model(model, train_loader, val_loader, epochs=100, learning_rate=
         
         # Train Batches
         for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.to(device), target.to(device)
+
             optimizer.zero_grad()
         
             # Forward pass
@@ -149,6 +160,7 @@ def train_lstm_model(model, train_loader, val_loader, epochs=100, learning_rate=
         
         with torch.no_grad():
             for data, target in val_loader:
+                data, target = data.to(device), target.to(device)
                 predictions = model(data, future_steps=target.shape[1])
                 loss = criterion(predictions, target)
                 val_loss += loss.item()
@@ -195,37 +207,50 @@ def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key =
     )
     
     
-    #PLot
+    #Plot
     if verbose:
         plot_training_curves(train_losses, val_losses, f"Training Loss [{key}]")
     
     # Test the trained model
     print("\nTesting trained model...")
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+    model.eval()
+
     test_loss = 0.0
     all_predictions = []
     all_targets = []
-    
+
     with torch.no_grad():
         for data, target in TestLD:
+            # --- Move batch to GPU ---
+            data, target = data.to(device), target.to(device)
+
             predictions = model(data, future_steps=target.shape[1])
             loss = nn.functional.mse_loss(predictions, target)
             test_loss += loss.item()
             
-            # Store batch results
+            # Move back to CPU for metrics and concatenation
             all_predictions.append(predictions.cpu().numpy())
             all_targets.append(target.cpu().numpy())
-    
+
+    # Concatenate all batches
     all_predictions = np.concatenate(all_predictions, axis=0)
     all_targets = np.concatenate(all_targets, axis=0)
 
+    # Compute metrics (on CPU / NumPy)
     r2_score = mtr.R2(all_predictions, all_targets)
-    mse = np.mean((all_predictions-all_targets)**2)
-    
+    mse = np.mean((all_predictions - all_targets) ** 2)
+
     print(f"Test R² Score: {r2_score}")
-    print(f'Test MSE: {mse}')
+    print(f"Test MSE: {mse}")
     print(f"Shapes - Predictions: {all_predictions.shape}, Targets: {all_targets.shape}")
+
     avg_test_loss = test_loss / len(TestLD)
-    print(f'Test avg. loss: {avg_test_loss}')
+    print(f"Test avg. loss: {avg_test_loss}")
+
     return avg_test_loss, mse, r2_score
+
 
 

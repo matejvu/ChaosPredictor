@@ -46,7 +46,3 @@ class LSTMnoTF(nn.Module):
         
         return torch.cat(predictions, dim=1)
     
-for i in range(20):
-    model = LSTMnoTF(3, i+1, 3, 20)
-    total_params = sum(p.numel() for p in model.parameters())
-    print(f"[{i}]Total number of parameters: {total_params}")
