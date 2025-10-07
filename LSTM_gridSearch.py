@@ -14,8 +14,8 @@ import sys
 
 lags = {4, 8}
 batches = {16, 32, 64}
-num_layers = {1,2,4}
-hidden_sizes = {8, 12}
+num_layers = {5, 7}
+hidden_sizes = {12, 16}
 learning_rates = { 0.1, 0.01, 0.001}
 decays = {0, 0.001}
 
@@ -27,9 +27,9 @@ batch_size = 16
 hidden_size = 12
 epochs = 150
 lr = 0.001
-gamma = 0.99
+gamma = 0.98
 num_layer = 2
-total_data = 5000
+total_data = 7000
 
 #==============================
 if __name__ == "__main__":

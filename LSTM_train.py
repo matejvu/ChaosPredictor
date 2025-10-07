@@ -55,42 +55,59 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
     X = data['X'][0][0:data_len]
     Y = data['Y'][0][0:data_len]
     Z = data['Z'][0][0:data_len]
-    
+
+    Xv = data['X'][1][0:data_len]
+    Yv = data['Y'][1][0:data_len]
+    Zv = data['Z'][1][0:data_len]
+
+    Xt = data['X'][2][0:data_len]
+    Yt = data['Y'][2][0:data_len]
+    Zt = data['Z'][2][0:data_len]
+
     timeseries = np.stack([X, Y, Z], axis=-1)
-    
+    timeseriesV = np.stack([Xv, Yv, Zv], axis=-1)
+    timeseriesT = np.stack([Xt, Yt, Zt], axis=-1)
+
     if(particles!=1):
         print('Multiple particles not yet supported!')
         return
     
-    data_in = []
-    data_out = []
-
-    for i in range(len(X) - d - t):
-        window = timeseries[i:i+d]
-        output = timeseries[i+d:i+d+t]
-        
-        data_in.append(window)
-        data_out.append(output)
 
 
-    data_in = np.array(data_in)    
-    data_out = np.array(data_out)    
-    
-    # train_d = np.expand_dims(train_d, axis=-1)
-    # train_out = np.expand_dims(train_out, axis=-1)
-    
-    # Convert to PyTorch tensors 
-    data_in = torch.FloatTensor(data_in)
-    data_out = torch.FloatTensor(data_out)
+    def make_windows(series, d, t):
+        data_in = []
+        data_out = []
+
+        for i in range(len(series) - d - t):
+            window = series[i:i+d]
+            output = series[i+d:i+d+t]
+            
+            data_in.append(window)
+            data_out.append(output)
+
+        return np.array(data_in), np.array(data_out)
+
+    # build windows separately for train / val / test
+    train_in, train_out = make_windows(timeseries, d, t)
+    val_in, val_out = make_windows(timeseriesV, d, t)
+    test_in, test_out = make_windows(timeseriesT, d, t)
+
+    # Convert to PyTorch tensors
+    train_in_t = torch.FloatTensor(train_in)
+    train_out_t = torch.FloatTensor(train_out)
+    val_in_t = torch.FloatTensor(val_in)
+    val_out_t = torch.FloatTensor(val_out)
+    test_in_t = torch.FloatTensor(test_in)
+    test_out_t = torch.FloatTensor(test_out)
     
     # Split data to Train Val Test - 70/15/15
-    train_size = int(0.7 * len(data_in))
-    val_size = int(0.85 * len(data_in))
-    
+    train_size = int(0.7 * len(train_in_t))
+    val_size = test_size = int(0.15 * len(train_in_t))
+
     #Datasets
-    train_dataset = TensorDataset(data_in[:train_size], data_out[:train_size])
-    val_dataset = TensorDataset(data_in[train_size:val_size], data_out[train_size:val_size])
-    test_dataset = TensorDataset(data_in[val_size:], data_out[val_size:])
+    train_dataset = TensorDataset(train_in_t[:train_size], train_out_t[:train_size])
+    val_dataset = TensorDataset(val_in_t[:val_size], val_out_t[:val_size])
+    test_dataset = TensorDataset(test_in_t[:test_size], test_out_t[:test_size])
     
     #DataLoaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -106,8 +123,10 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
 #       model - LSTM model
 #       train_loader - 
 #       val_loader - 
+#       file - file to write output
 #       epochs - 
 #       learning_rate - 
+#       gamma - learning rate decay
 #   RETURN
 #       train_losses
 #       val_losses
@@ -251,7 +270,7 @@ def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key =
     r2_score = mtr.R2(all_predictions, all_targets)
     mse = np.mean((all_predictions - all_targets) ** 2)
 
-    print(f"Test R² Score: {r2_score}")
+    print(f"Test R2 Score: {r2_score}")
     print(f"Test MSE: {mse}")
     print(f"Shapes - Predictions: {all_predictions.shape}, Targets: {all_targets.shape}")
 
@@ -260,5 +279,11 @@ def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key =
 
     return avg_test_loss, mse, r2_score
 
-
-
+if __name__ ==  '__main__':
+    path = "./datasets_npz/lorenz_dataset.npz"
+    d = 4
+    t = 100
+    batch_size = 16
+    td = 1000
+    (TrainLD, ValLD, TestLD),(TrainDS, ValDS, TestDS), D = TDatasetFromSeries(path, d, t, batch_size, data_len=td)
+    
