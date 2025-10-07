@@ -6,8 +6,9 @@ __pycache__/
 datasets_h5/
 datasets_npz/
 
-# Images
+# Output
 *.png
+*.txt
 
 # Dataset file types (catch any stray files of these types)
 *.h5

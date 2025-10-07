@@ -24,25 +24,46 @@ class LSTMnoTF(nn.Module):
         self.lstm = nn.LSTM(input_size, hidden_size, num_layers=nlayers, batch_first=True)
         self.fc = nn.Linear(hidden_size, output_size)
     
-    def forward(self, x, future_steps=None, teacher_forcing_ratio=0.5):
+    def forward(self, x, future_steps=None):
         if future_steps is None:
             future_steps = self.max_future_steps
         
+        # print(x.shape)
         #Process lag frame through lstm
         _, (hidden, cell) = self.lstm(x)
         
+        # print(hidden.shape)
+
         #initial prediction(t+1)
+        #hidden vraca sve lejere u poslednjem vremenskom koraku a uzet je samo njavisi lejer
         last_output = hidden[-1]  # shape: (batch, hidden_size)
-        prediction_next = self.fc(last_output)
-        prediction_next = prediction_next.unsqueeze(1)
-        
+        # print(last_output.shape)
+
+        #da uvek bude u istom formatu, kao output
+        prediction_next = self.fc(last_output.unsqueeze(1))
+        # print(f'prediction next {prediction_next.shape}') 
+        prediction_next = prediction_next
+        # print(f'prediction next unsq {prediction_next.shape}')
         predictions = []
         
         for t in range(future_steps):
             predictions.append(prediction_next)
             lstm_out, (hidden, cell) = self.lstm(prediction_next, (hidden, cell))
+            # print(f'lstm out {lstm_out.shape}')
+            # print(f'hidden {hidden.shape}')
+
             prediction_next = self.fc(lstm_out)
+            # print(f'prediction next {prediction_next.shape}')
             
         
         return torch.cat(predictions, dim=1)
     
+if __name__ == "__main__":
+    #Test
+    model = LSTMnoTF(input_size=3, hidden_size=6, output_size=3, max_future_steps=10, nlayers=2)
+    x = torch.randn(16, 4, 3)  # batch_size=16, lag=4, features=3
+    
+    model.forward(x)
+
+    # out = model(x)
+    # print(out.shape)  # Expected shape: (16, 10, 3)

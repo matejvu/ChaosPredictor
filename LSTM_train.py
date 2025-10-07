@@ -112,7 +112,7 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
 #       train_losses
 #       val_losses
 #=========================================
-def train_lstm_model(model, train_loader, val_loader, epochs=100, learning_rate=0.001, gamma = 0.95):
+def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning_rate=0.001, gamma = 0.95):
     if torch.cuda.is_available():
         print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
         device = torch.device('cuda')
@@ -178,11 +178,12 @@ def train_lstm_model(model, train_loader, val_loader, epochs=100, learning_rate=
         
         if epoch % 10 == 0:
             print(f'Epoch {epoch:3d}/{epochs} | Train Loss: {avg_train_loss:.6f} | Val Loss: {avg_val_loss:.6f}')
+            file.flush()
     
     return train_losses, val_losses
 
 
-def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key = '', td = 1000, verbose = False):
+def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key = '', td = 1000, file = None, verbose = False):
     
     #load data
     (TrainLD, ValLD, TestLD),(TrainDS, ValDS, TestDS), D = TDatasetFromSeries(path, d, t, batch_size, data_len=td)
@@ -203,11 +204,14 @@ def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key =
     print(f"Batch size: {batch_size}")
     print(f"Input train data shape: {TrainDS.tensors[0].shape}")
     print(f"Output train data shape: {TrainDS.tensors[1].shape}")
-    
+
+    if file:
+        file.flush()
+
     # Train the model
     print("\nStarting training...")
     train_losses, val_losses = train_lstm_model(
-        model, TrainLD, ValLD, epochs=epochs, learning_rate=lr, gamma = gamma
+        model, TrainLD, ValLD, file, epochs=epochs, learning_rate=lr, gamma = gamma
     )
     
     

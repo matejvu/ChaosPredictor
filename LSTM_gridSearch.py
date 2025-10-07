@@ -8,13 +8,14 @@ Created on Sun Oct  5 22:33:08 2025
 from LSTM_train import train
 import numpy as np
 import time
+import sys
 
 #=======HYPERPARAMETERS=======
 
 lags = {4, 8}
 batches = {16, 32, 64}
 num_layers = {1,2,4}
-hidden_sizes = {6, 12}
+hidden_sizes = {8, 12}
 learning_rates = { 0.1, 0.01, 0.001}
 decays = {0, 0.001}
 
@@ -26,9 +27,9 @@ batch_size = 16
 hidden_size = 12
 epochs = 150
 lr = 0.001
-gamma = 1
-num_layer = 1
-total_data = 30000
+gamma = 0.99
+num_layer = 2
+total_data = 5000
 
 #==============================
 if __name__ == "__main__":
@@ -37,13 +38,16 @@ if __name__ == "__main__":
     key=''
     time_start = time.time()
 
-    for lag in lags: 
+    with open('./training_plots/output.txt', 'w') as f:
+        sys.stdout = f
+
+        # for lag in lags: 
         for num_layer in num_layers:
             for hidden_size in hidden_sizes:
-            
-                key = 'lag'+str(lag)+'nl'+str(num_layer)+'hs'+str(hidden_size)
-                # key = 'lr'+str(lr)+'gam'+str(gamma)
                 
+                key = 'nl'+str(num_layer)+'hs'+str(hidden_size)
+                    # key = 'lr'+str(lr)+'gam'+str(gamma)
+                    
                 loss, mse, r2 = train(
                                 path = path,
                                 d = lag,
@@ -56,17 +60,19 @@ if __name__ == "__main__":
                                 nlayers = num_layer,
                                 td = total_data,
                                 verbose = True,
-                                key = key
+                                key = key,
+                                file = f
                                 )
                 
                 losses[key] = [loss, mse, r2]
-    
-    time_end = time.time()
-    elapsed = round(time_end - time_start)
+                f.flush()
 
-    print('======================RESULTS===================================================')
-    print(f"Total elapsed time: {elapsed//3600} : {elapsed%3600//60} : {elapsed%60} (h:m:s)")
-    print('\n Key\t\t| Avg. Loss\t| MSE\t\t| R² score')
-    print('=====================================================')
-    for k, v in losses.items():
-        print(f' {k}\t| {v[0]:.4f}\t| {v[1]:.4f}\t| {v[2]:.4f}')
+        time_end = time.time()
+        elapsed = round(time_end - time_start)
+
+        print('======================RESULTS===================================================')
+        print(f"Total elapsed time: {elapsed//3600} : {elapsed%3600//60} : {elapsed%60} (h:m:s)")
+        print('\n Key\t\t| Avg. Loss\t| MSE\t\t| R² score')
+        print('=====================================================')
+        for k, v in losses.items():
+            print(f' {k}\t| {v[0]:.4f}\t| {v[1]:.4f}\t| {v[2]:.4f}')
