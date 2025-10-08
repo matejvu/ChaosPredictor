@@ -15,7 +15,7 @@ import sys
 lags = {4, 8}
 batches = {16, 32, 64}
 num_layers = { 7}
-hidden_sizes = {16, 24}
+hidden_sizes = { 24, 16}
 learning_rates = { 0.1, 0.01, 0.001}
 decays = {0, 0.001}
 

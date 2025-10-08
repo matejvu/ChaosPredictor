@@ -27,3 +27,4 @@ githubOnogLika/
 
 #tmp from LLE_from_data
 tmp.npy
+*.pth

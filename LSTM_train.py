@@ -51,6 +51,10 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
     dt = data["dt"]
     init = data["init"]
     D = data["dimension"]
+	
+	# Split data to Train Val Test - 70/15/15
+    train_size = int(0.7 * data_len)
+    val_size = test_size = int(0.85 * data_len)
     
     X = data['X'][0][0:data_len]
     Y = data['Y'][0][0:data_len]
@@ -100,14 +104,12 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
     test_in_t = torch.FloatTensor(test_in)
     test_out_t = torch.FloatTensor(test_out)
     
-    # Split data to Train Val Test - 70/15/15
-    train_size = int(0.7 * len(train_in_t))
-    val_size = test_size = int(0.15 * len(train_in_t))
+    
 
     #Datasets
     train_dataset = TensorDataset(train_in_t[:train_size], train_out_t[:train_size])
-    val_dataset = TensorDataset(val_in_t[:val_size], val_out_t[:val_size])
-    test_dataset = TensorDataset(test_in_t[:test_size], test_out_t[:test_size])
+    val_dataset = TensorDataset(val_in_t[train_size:val_size], val_out_t[train_size:val_size])
+    test_dataset = TensorDataset(test_in_t[val_size:], test_out_t[val_size:])
     
     #DataLoaders
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
@@ -116,7 +118,7 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
     
     
     return (train_loader, val_loader, test_loader), (train_dataset, val_dataset, test_dataset), D
-    
+
 
 #=========================================
 #   ARGS
