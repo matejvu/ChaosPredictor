@@ -14,8 +14,8 @@ import sys
 
 lags = {4, 8}
 batches = {16, 32, 64}
-num_layers = {5, 7}
-hidden_sizes = {12, 16}
+num_layers = { 7}
+hidden_sizes = {16, 24}
 learning_rates = { 0.1, 0.01, 0.001}
 decays = {0, 0.001}
 
@@ -28,8 +28,8 @@ hidden_size = 12
 epochs = 150
 lr = 0.001
 gamma = 0.98
-num_layer = 2
-total_data = 7000
+num_layer = 4
+total_data = 15000
 
 #==============================
 if __name__ == "__main__":
@@ -42,30 +42,30 @@ if __name__ == "__main__":
         sys.stdout = f
 
         # for lag in lags: 
-        for num_layer in num_layers:
-            for hidden_size in hidden_sizes:
+        # for num_layer in num_layers:
+        for hidden_size in hidden_sizes:
+            
+            key = 'nl'+str(num_layer)+'hs'+str(hidden_size)
+                # key = 'lr'+str(lr)+'gam'+str(gamma)
                 
-                key = 'nl'+str(num_layer)+'hs'+str(hidden_size)
-                    # key = 'lr'+str(lr)+'gam'+str(gamma)
-                    
-                loss, mse, r2 = train(
-                                path = path,
-                                d = lag,
-                                t = h,
-                                batch_size = batch_size,
-                                hidden_size = hidden_size,
-                                epochs = epochs,
-                                lr = lr,
-                                gamma = gamma,
-                                nlayers = num_layer,
-                                td = total_data,
-                                verbose = True,
-                                key = key,
-                                file = f
-                                )
-                
-                losses[key] = [loss, mse, r2]
-                f.flush()
+            loss, mse, r2 = train(
+                            path = path,
+                            d = lag,
+                            t = h,
+                            batch_size = batch_size,
+                            hidden_size = hidden_size,
+                            epochs = epochs,
+                            lr = lr,
+                            gamma = gamma,
+                            nlayers = num_layer,
+                            td = total_data,
+                            verbose = True,
+                            key = key,
+                            file = f
+                            )
+            
+            losses[key] = [loss, mse, r2]
+            f.flush()
 
         time_end = time.time()
         elapsed = round(time_end - time_start)

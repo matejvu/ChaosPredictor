@@ -19,6 +19,8 @@ datasets_npz/
 
 #thesis
 *.docx
+*.tex
+*.bib
 
 #lr alg directory
 githubOnogLika/

@@ -131,7 +131,7 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
 #       train_losses
 #       val_losses
 #=========================================
-def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning_rate=0.001, gamma = 0.95):
+def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning_rate=0.001, gamma=0.95, early_stopping_patience=30):
     if torch.cuda.is_available():
         print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
         device = torch.device('cuda')
@@ -143,6 +143,7 @@ def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning
     criterion = nn.MSELoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
     scheduler = ExponentialLR(optimizer, gamma=gamma)
+    early_stopping = mtr.EarlyStopping(patience=early_stopping_patience, path='best_model.pth')
     
     train_losses = []
     val_losses = []
@@ -198,6 +199,13 @@ def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning
         if epoch % 10 == 0:
             print(f'Epoch {epoch:3d}/{epochs} | Train Loss: {avg_train_loss:.6f} | Val Loss: {avg_val_loss:.6f}')
             file.flush()
+
+        #Early stopping
+        early_stopping(val_loss, model)
+
+        if early_stopping.early_stop:
+            print("Early stopping triggered")
+            break
     
     return train_losses, val_losses
 
