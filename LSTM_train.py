@@ -133,7 +133,7 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
 #       train_losses
 #       val_losses
 #=========================================
-def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning_rate=0.001, gamma=0.95, early_stopping_patience=30):
+def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning_rate=0.001, gamma=0.95, early_stopping_patience=50):
     if torch.cuda.is_available():
         print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
         device = torch.device('cuda')
