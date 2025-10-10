@@ -5,7 +5,6 @@ Created on Sun Aug 17 15:53:30 2025
 @author: matej
 """
 
-import h5py
 import numpy as np
 import attractors_catalog as ac
 import random as r
@@ -43,15 +42,6 @@ def generate_dataset(attractor, D = 2, particles = 10, steps = 100000, discard =
         else: 
             print("Invalid dimension D = "+str(D))
             return
-                    
-    with h5py.File("./datasets_h5/"+attractor+"_dataset.h5", "w") as f:
-        f.create_dataset("x", data=xs_all)
-        f.create_dataset("y", data=ys_all)
-        f.create_dataset("z", data=zs_all)
-        f.create_dataset("init_conditions", data=init_conditions)
-        f.attrs["system"] = attractor
-        f.attrs["dimension"] = D
-        f.attrs["dt"] = dt
 
     np.savez(
         "./datasets_npz/"+attractor+"_dataset.npz",
