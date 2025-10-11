@@ -34,8 +34,17 @@ def plot_dataset(path, particles=1, time=-1):
             color=palette[p % len(palette)],
             width=1.5
         )
+        marker=dict(
+            size=0.5,
+            color=np.linspace(0, 1, len(data["X"][0][:time])),
+            colorscale='Turbo'
+        )
         
         if D == 3:
+            #Background choice
+            axis_style = dict(showbackground=False, showgrid=False, zeroline=False)
+            # axis_style = dict(showbackground=True, showgrid=True, zeroline=True)
+            
             xs = data["X"][p][:time]
             ys = data["Y"][p][:time]
             zs = data["Z"][p][:time]
@@ -47,19 +56,19 @@ def plot_dataset(path, particles=1, time=-1):
             ))
             fig.update_layout(
                 scene=dict(
-                    xaxis_title="X",
-                    yaxis_title="Y",
-                    zaxis_title="Z"
+                    xaxis=dict(title="X", **axis_style),
+                    yaxis=dict(title="Y", **axis_style),
+                    zaxis=dict(title="Z", **axis_style),
                 ),
                 width=1024, height=1024
             )
-        else:
+        elif D == 2:
             xs = data["X"][p][:time]
             ys = data["Y"][p][:time]
             fig.add_trace(go.Scatter(
                 x=xs, y=ys,
-                mode="lines",
-                line=line_dict,
+                mode="markers",
+                marker=marker,
                 name=f"Particle {p+1}"
             ))
             fig.update_layout(
@@ -71,8 +80,14 @@ def plot_dataset(path, particles=1, time=-1):
     fig.show()
 
 if __name__ == "__main__":
-    plot_dataset("./datasets_npz_awng/lorenz_dataset_50dB.npz", particles=1, time = 660 )
+    # plot_dataset("./datasets_npz/clifford_dataset.npz", particles=1, time = 50000 )
+    plot_dataset("./datasets_npz_awng/lorenz_dataset_50dB.npz", particles=3, time=3000)
+    plot_dataset("./datasets_npz_awng/lorenz_dataset_40dB.npz", particles=3, time=3000)
+    plot_dataset("./datasets_npz_awng/lorenz_dataset_30dB.npz", particles=3, time=3000)
+    plot_dataset("./datasets_npz_awng/lorenz_dataset_20dB.npz", particles=3, time=3000)
+    plot_dataset("./datasets_npz_awng/lorenz_dataset_10dB.npz", particles=3, time=3000)
+    plot_dataset("./datasets_npz_awng/lorenz_dataset_0dB.npz", particles=3, time=3000)
+    # plot_dataset("./datasets_npz_awng/lorenz_dataset_0dB.npz", particles=1)
     # plot_dataset("./datasets_npz_awng/sprott_dataset_40dB.npz", particles=1)
-    # plot_dataset("./datasets_npz_awng/sprott_dataset_30dB.npz", particles=1)
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_20dB.npz", particles=3)
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_10dB.npz", particles=2)

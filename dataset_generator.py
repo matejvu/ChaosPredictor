@@ -57,7 +57,7 @@ def generate_dataset(attractor, D = 2, particles = 10, steps = 100000, discard =
     return 
 
 if __name__ == "__main__":
-    generate_dataset("sprott", 3, 1, radius = 2.0)
+    generate_dataset("thinkerbell", D = 2, particles = 5, radius = 2.0)
 
     
     
