@@ -172,6 +172,7 @@ def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning
             optimizer.step()
             
             train_loss += loss.item()
+        
         # python
         if torch.cuda.is_available():
             torch.cuda.empty_cache()

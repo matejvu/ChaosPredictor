@@ -28,7 +28,7 @@ hidden_size = 24
 epochs = 150
 lr = 0.001
 gamma = 0.98
-num_layer = 4
+num_layer = 5
 total_data = 15000
 
 #==============================
