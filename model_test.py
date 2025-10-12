@@ -105,14 +105,17 @@ def one_test_run(model, loader):
 
     return mse, r2_score
 
-
-def test_prediction(model_path, data_path, isize,hsize, osize, nlayers, bach_size = 16, timesteps = 100, verbose = False):
-    
+def load_model(model_path, isize,hsize, osize, nlayers, timesteps):
     model = LSTMnoTF(isize, hsize, osize, timesteps, nlayers)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    state_dict = torch.load("best_model_2.6.pth", map_location=device)
+    state_dict = torch.load(model_path, map_location=device)
     model.load_state_dict(state_dict)
+
+    return model
+
+
+def test_prediction(model, data_path, bach_size = 16, timesteps = 100, verbose = False):
 
     model.eval()
 
@@ -149,9 +152,22 @@ def test_prediction(model_path, data_path, isize,hsize, osize, nlayers, bach_siz
         print(f"Test MSE: {mse}")
     
 
+def test_structure(model):
     
+    model.eval()
+
 if __name__ == "__main__":
-    test_prediction(    model_path = 'best_model_2.6.pth',
+    model = load_model(
+                        model_path = 'best_model.pth',
+                        isize = 3,
+                        hsize = 24,
+                        osize = 3,
+                        nlayers = 4, 
+                        timesteps = 600)
+
+
+    test_prediction(    
+                        model = model,
                         data_path = 'datasets_npz/lorenz_dataset.npz',
                         isize = 3,
                         hsize = 24,

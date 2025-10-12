@@ -13,7 +13,7 @@ import sys
 #=======HYPERPARAMETERS=======
 
 lags = {4, 8}
-batches = { 16}
+batches = { 128}
 num_layers = { 7}
 hidden_sizes = { 24, 16}
 learning_rates = { 0.01, 0.001}
@@ -22,14 +22,14 @@ decays = {0.01}
 #=========PARAMETERS==========
 
 lag = 4
-h = 600
+h = 500
 batch_size = 16
-hidden_size = 24
+hidden_size = 28
 epochs = 150
 lr = 0.001
 gamma = 0.98
 num_layer = 5
-total_data = 15000
+total_data = 25000
 
 #==============================
 if __name__ == "__main__":

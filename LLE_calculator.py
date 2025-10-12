@@ -77,6 +77,7 @@ def find_LLE(path, time=100000):
     plt.plot(t, l)
     plt.xlabel('t')
     plt.ylabel('$\lambda_1$')
+    plt.xscale('log')
     plt.title('Lyapunov Exponent Convergence')
     plt.savefig('lyapunov_plot_'+attractor+'_'+dB+'.png', dpi=300, bbox_inches='tight')
     plt.show()
