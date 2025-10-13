@@ -10,17 +10,8 @@ import numpy as np
 
 limit = 10000
 
-if __name__ == "__main__":
-    traceJ = float(input('Enter valid analytical value of trace(J) for your system:'))
-    
-    data = np.load("./datasets_npz/lorenz_dataset.npz")
-    D = data["dimension"]
-    x = data["X"][0][0:limit]
-    y = data["Y"][0][0:limit]
-    z = data["Z"][0][0:limit]
-
+def calcL1(x,y,z, D):
     l1=[]
-    
     
     ts = x  
     np.save("tmp.npy", ts)  
@@ -65,7 +56,23 @@ if __name__ == "__main__":
         )
         l1.append(lle)
         
-    l1 = sum(l1)/len(l1)
+        l1 = sum(l1)/len(l1)
+        
+        return l1
+        
+
+if __name__ == "__main__":
+    traceJ = float(input('Enter valid analytical value of trace(J) for your system:'))
+    
+    data = np.load("./datasets_npz_awng/lorenz_dataset_40dB.npz")
+    D = data["dimension"]
+    x = data["X"][0][0:limit]
+    y = data["Y"][0][0:limit]
+    z = data["Z"][0][0:limit]
+
+    
+        
+    l1 = calcL1(x, y, z, D)
     l2 = 0.0
     l3 = traceJ - l1 - l2
     

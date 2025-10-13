@@ -42,8 +42,8 @@ def plot_dataset(path, particles=1, time=-1):
         
         if D == 3:
             #Background choice
-            axis_style = dict(showbackground=False, showgrid=False, zeroline=False)
-            # axis_style = dict(showbackground=True, showgrid=True, zeroline=True)
+            # axis_style = dict(showbackground=False, showgrid=False, zeroline=False)
+            axis_style = dict(showbackground=True, showgrid=True, zeroline=True)
             
             xs = data["X"][p][:time]
             ys = data["Y"][p][:time]
