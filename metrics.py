@@ -35,4 +35,8 @@ def R2(predictions, timeseries):
     
     return 1 - modelMSE / meanMSE
     
-    
+def Standardize(data, mean, std):
+    return (data - mean) / std
+
+def Destandardize(data, mean, std):
+    return data * std + mean

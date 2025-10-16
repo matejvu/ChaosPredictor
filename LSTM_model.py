@@ -13,10 +13,11 @@ import numpy as np
 #model of LSTM with no Teacher Forcing
 
 class LSTMnoTF(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size, max_future_steps, nlayers = 1):
+    def __init__(self, input_size, hidden_size, output_size, max_future_steps, nlayers = 1, stand_scales=None):
         super().__init__()
         self.max_future_steps = max_future_steps
-        
+        self.stand_scales = stand_scales
+
         #input_size - broj feature-ova
         #output_size - broj feature-ova
         #hidden_size - dubina memorije

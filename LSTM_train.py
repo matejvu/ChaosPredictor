@@ -44,13 +44,14 @@ def plot_training_curves(train_losses, val_losses, title = 'Training and Validat
 #       loaders - tuple of DataLoaders
 #       datasets - tuple of Datasets
 #       D - dimension of data
-
+#       Standardization scales - (mean, std) for each dimension
 #=========================================
 def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
     data = np.load(path)
     dt = data["dt"]
     init = data["init"]
     D = data["dimension"]
+    # print(f'Normalization scales: {data["normalization_scales"]}')
 	
 	# Split data to Train Val Test - 70/15/15
     train_size = int(0.7 * data_len)
@@ -68,9 +69,19 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
     Yt = data['Y'][2][0:data_len]
     Zt = data['Z'][2][0:data_len]
 
+    #Standardization
+    std_x, std_y, std_z = X.std(), Y.std(), Z.std()
+    mean_x, mean_y, mean_z = X.mean(), Y.mean(), Z.mean()
+    X, Xv, Xt = mtr.Standardize(X, mean_x, std_x), mtr.Standardize(Xv, mean_x, std_x), mtr.Standardize(Xt, mean_x, std_x)
+    Y, Yv, Yt = mtr.Standardize(Y, mean_y, std_y), mtr.Standardize(Yv, mean_y, std_y), mtr.Standardize(Yt, mean_y, std_y)
+    Z, Zv, Zt = mtr.Standardize(Z, mean_z, std_z), mtr.Standardize(Zv, mean_z, std_z), mtr.Standardize(Zt, mean_z, std_z)
+    standardization_scales = ((mean_x, std_x), (mean_y, std_y), (mean_z, std_z))
+
     timeseries = np.stack([X, Y, Z], axis=-1)
     timeseriesV = np.stack([Xv, Yv, Zv], axis=-1)
     timeseriesT = np.stack([Xt, Yt, Zt], axis=-1)
+
+    # print(timeseries[:10],"\n\n", timeseriesV[10:20],"\n\n", timeseriesT[10:20])
 
     if(particles!=1):
         print('Multiple particles not yet supported!')
@@ -117,7 +128,7 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     
     
-    return (train_loader, val_loader, test_loader), (train_dataset, val_dataset, test_dataset), D
+    return (train_loader, val_loader, test_loader), (train_dataset, val_dataset, test_dataset), D, standardization_scales
 
 
 #=========================================
@@ -216,11 +227,11 @@ def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning
 def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key = '', td = 1000, file = None, verbose = False):
     
     #load data
-    (TrainLD, ValLD, TestLD),(TrainDS, ValDS, TestDS), D = TDatasetFromSeries(path, d, t, batch_size, data_len=td)
+    (TrainLD, ValLD, TestLD),(TrainDS, ValDS, TestDS), D, ss = TDatasetFromSeries(path, d, t, batch_size, data_len=td)
     
     # Initialize model
     input_size = output_size = D    
-    model = LSTMnoTF(input_size, hidden_size, output_size, t, nlayers=nlayers)
+    model = LSTMnoTF(input_size, hidden_size, output_size, t, nlayers=nlayers, stand_scales=ss)
     
     # Print model info
     total_params = sum(p.numel() for p in model.parameters())
@@ -234,6 +245,7 @@ def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key =
     print(f"Batch size: {batch_size}")
     print(f"Input train data shape: {TrainDS.tensors[0].shape}")
     print(f"Output train data shape: {TrainDS.tensors[1].shape}")
+    print(f"Standardization scales (mean, std) per dimension: {model.stand_scales}")
 
     if file:
         file.flush()

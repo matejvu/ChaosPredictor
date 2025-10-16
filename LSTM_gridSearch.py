@@ -13,23 +13,23 @@ import sys
 #=======HYPERPARAMETERS=======
 
 lags = {4, 8}
-batches = { 1024}
+batches = { 16}
 num_layers = { 7}
 hidden_sizes = { 24, 16}
 learning_rates = { 0.01, 0.001}
-decays = {0.01}
+decays = {0.01, 0.0}
 
 #=========PARAMETERS==========
 
-lag = 20
-h = 500
+lag = 4
+h = 100
 batch_size = 16
-hidden_size = 36
+hidden_size = 24
 epochs = 150
 lr = 0.001
 gamma = 0.98
-num_layer = 10
-total_data = 100000
+num_layer = 4
+total_data = 16000
 
 #==============================
 if __name__ == "__main__":
@@ -44,9 +44,9 @@ if __name__ == "__main__":
         # for lag in lags: 
         for decay in decays:
             gamma = 1 - decay
-            for batch_size in batches:
+            for lr in learning_rates:
 
-                key = 'h600'+'y'+str(gamma)+'bch'+str(batch_size)
+                key = 'h100'+'y'+str(gamma)+'lr'+str(batch_size)
                     # key = 'lr'+str(lr)+'gam'+str(gamma)
                     
                 loss, mse, r2 = train(
