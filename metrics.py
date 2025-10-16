@@ -40,3 +40,9 @@ def Standardize(data, mean, std):
 
 def Destandardize(data, mean, std):
     return data * std + mean
+
+def Normalize(data, min_val, max_val):
+    return (data - min_val) / (max_val - min_val)
+
+def Denormalize(data, min_val, max_val):
+    return data * (max_val - min_val) + min_val

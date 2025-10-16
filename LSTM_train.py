@@ -44,9 +44,9 @@ def plot_training_curves(train_losses, val_losses, title = 'Training and Validat
 #       loaders - tuple of DataLoaders
 #       datasets - tuple of Datasets
 #       D - dimension of data
-#       Standardization scales - (mean, std) for each dimension
+#       Standardization or normalization scales - (mean, std) or (min, max) for each dimension
 #=========================================
-def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
+def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000, StanOrNorm = 'Standardization'):
     data = np.load(path)
     dt = data["dt"]
     init = data["init"]
@@ -69,13 +69,22 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
     Yt = data['Y'][2][0:data_len]
     Zt = data['Z'][2][0:data_len]
 
-    #Standardization
-    std_x, std_y, std_z = X.std(), Y.std(), Z.std()
-    mean_x, mean_y, mean_z = X.mean(), Y.mean(), Z.mean()
-    X, Xv, Xt = mtr.Standardize(X, mean_x, std_x), mtr.Standardize(Xv, mean_x, std_x), mtr.Standardize(Xt, mean_x, std_x)
-    Y, Yv, Yt = mtr.Standardize(Y, mean_y, std_y), mtr.Standardize(Yv, mean_y, std_y), mtr.Standardize(Yt, mean_y, std_y)
-    Z, Zv, Zt = mtr.Standardize(Z, mean_z, std_z), mtr.Standardize(Zv, mean_z, std_z), mtr.Standardize(Zt, mean_z, std_z)
-    standardization_scales = ((mean_x, std_x), (mean_y, std_y), (mean_z, std_z))
+    if(StanOrNorm == 'Standardization'):
+        #Standardization
+        std_x, std_y, std_z = X.std(), Y.std(), Z.std()
+        mean_x, mean_y, mean_z = X.mean(), Y.mean(), Z.mean()
+        X, Xv, Xt = mtr.Standardize(X, mean_x, std_x), mtr.Standardize(Xv, mean_x, std_x), mtr.Standardize(Xt, mean_x, std_x)
+        Y, Yv, Yt = mtr.Standardize(Y, mean_y, std_y), mtr.Standardize(Yv, mean_y, std_y), mtr.Standardize(Yt, mean_y, std_y)
+        Z, Zv, Zt = mtr.Standardize(Z, mean_z, std_z), mtr.Standardize(Zv, mean_z, std_z), mtr.Standardize(Zt, mean_z, std_z)
+        sn_scales = ((mean_x, std_x), (mean_y, std_y), (mean_z, std_z))
+    elif(StanOrNorm == 'Normalization'):
+        #Normalization
+        min_x, min_y, min_z = 0.9*X.min(), 0.9*Y.min(), 0.9*Z.min()
+        max_x, max_y, max_z = 1.1*X.max(), 1.1*Y.max(), 1.1*Z.max()
+        X, Xv, Xt = mtr.Normalize(X, min_x, max_x), mtr.Normalize(Xv, min_x, max_x), mtr.Normalize(Xt, min_x, max_x)
+        Y, Yv, Yt = mtr.Normalize(Y, min_y, max_y), mtr.Normalize(Yv, min_y, max_y), mtr.Normalize(Yt, min_y, max_y)
+        Z, Zv, Zt = mtr.Normalize(Z, min_z, max_z), mtr.Normalize(Zv, min_z, max_z), mtr.Normalize(Zt, min_z, max_z)
+        sn_scales = ((min_x, max_x), (min_y, max_y), (min_z, max_z))
 
     timeseries = np.stack([X, Y, Z], axis=-1)
     timeseriesV = np.stack([Xv, Yv, Zv], axis=-1)
@@ -128,7 +137,7 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000):
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     
     
-    return (train_loader, val_loader, test_loader), (train_dataset, val_dataset, test_dataset), D, standardization_scales
+    return (train_loader, val_loader, test_loader), (train_dataset, val_dataset, test_dataset), D, sn_scales
 
 
 #=========================================
