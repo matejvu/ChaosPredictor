@@ -46,7 +46,7 @@ def plot_training_curves(train_losses, val_losses, title = 'Training and Validat
 #       D - dimension of data
 #       Standardization or normalization scales - (mean, std) or (min, max) for each dimension
 #=========================================
-def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000, StanOrNorm = 'Standardization'):
+def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000, StanOrNorm = 'Normalization'):
     data = np.load(path)
     dt = data["dt"]
     init = data["init"]
@@ -79,8 +79,8 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000, S
         sn_scales = ((mean_x, std_x), (mean_y, std_y), (mean_z, std_z))
     elif(StanOrNorm == 'Normalization'):
         #Normalization
-        min_x, min_y, min_z = 0.9*X.min(), 0.9*Y.min(), 0.9*Z.min()
-        max_x, max_y, max_z = 1.1*X.max(), 1.1*Y.max(), 1.1*Z.max()
+        min_x, min_y, min_z = X.min() - 0.1*abs(X.min()), Y.min() - 0.1*abs(Y.min()), Z.min() - 0.1*abs(Z.min())
+        max_x, max_y, max_z = X.max() + 0.1*abs(X.max()), Y.max() + 0.1*abs(Y.max()), Z.max() + 0.1*abs(Z.max())
         X, Xv, Xt = mtr.Normalize(X, min_x, max_x), mtr.Normalize(Xv, min_x, max_x), mtr.Normalize(Xt, min_x, max_x)
         Y, Yv, Yt = mtr.Normalize(Y, min_y, max_y), mtr.Normalize(Yv, min_y, max_y), mtr.Normalize(Yt, min_y, max_y)
         Z, Zv, Zt = mtr.Normalize(Z, min_z, max_z), mtr.Normalize(Zv, min_z, max_z), mtr.Normalize(Zt, min_z, max_z)
@@ -254,7 +254,7 @@ def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key =
     print(f"Batch size: {batch_size}")
     print(f"Input train data shape: {TrainDS.tensors[0].shape}")
     print(f"Output train data shape: {TrainDS.tensors[1].shape}")
-    print(f"Standardization scales (mean, std) per dimension: {model.stand_scales}")
+    print(f"Normalization scales (min, max) per dimension: {model.stand_scales}")
 
     if file:
         file.flush()

@@ -9,6 +9,20 @@ from LSTM_train import train
 import numpy as np
 import time
 import sys
+import random
+import torch
+
+def set_random_seed(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+
+
 
 #=======HYPERPARAMETERS=======
 
@@ -16,7 +30,7 @@ lags = {4, 8}
 batches = { 16}
 num_layers = { 7}
 hidden_sizes = { 24, 16}
-learning_rates = { 0.01, 0.001}
+learning_rates = { 0.001, 0.0001}
 decays = {0.01, 0.0}
 
 #=========PARAMETERS==========
@@ -33,6 +47,7 @@ total_data = 16000
 
 #==============================
 if __name__ == "__main__":
+    set_random_seed(2154)
     path = "./datasets_npz/lorenz_dataset.npz"
     losses = {}
     key=''
