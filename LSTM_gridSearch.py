@@ -30,8 +30,8 @@ lags = {4, 8}
 batches = { 16}
 num_layers = { 7}
 hidden_sizes = { 24, 16}
-learning_rates = { 0.001, 0.0001}
-decays = {0.01, 0.0}
+learning_rates = { 0.001}
+decays = {0.05, 0.1}
 
 #=========PARAMETERS==========
 

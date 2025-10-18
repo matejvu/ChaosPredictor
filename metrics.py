@@ -46,3 +46,38 @@ def Normalize(data, min_val, max_val):
 
 def Denormalize(data, min_val, max_val):
     return data * (max_val - min_val) + min_val
+
+def denormalize_3d_array(array, norm_scales):
+    for i, el in enumerate(array):
+        for j, (min_val, max_val) in enumerate(norm_scales):
+            array[i, j] = Denormalize(array[i, j], min_val, max_val)
+
+    return array
+
+
+def load_norm_scales_from_string(s):
+    """
+    Parses a string representation of normalization scales into a list of tuples.
+
+    Args:
+        s (str): String representation of normalization scales, e.g.,
+                 "((min_x, max_x), (min_y, max_y), (min_z, max_z))"
+
+    Returns:
+        list of tuples: Parsed normalization scales, e.g.,
+                        [(-21.364112300269195, 22.20895754015633),
+                         (-28.24657733906283, 29.750518195812635),
+                         (3.376750699146575, 56.256212935739285)]
+    """
+    # Remove outer parentheses and split into individual tuples
+    s = s.strip("()")
+    scales = s.split("), (")
+    
+    norm_scales = []
+    for scale in scales:
+        # Remove any remaining parentheses and split into min/max
+        min_max = scale.replace("(", "").replace(")", "").split(", ")
+        norm_scales.append((float(min_max[0].strip('np.float64')), float(min_max[1].strip('np.float64'))))
+    
+    return norm_scales
+

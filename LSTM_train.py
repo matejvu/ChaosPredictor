@@ -12,6 +12,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from torch.optim.lr_scheduler import ExponentialLR
 import numpy as np
 import matplotlib.pyplot as plt
+import gc
 
 from LSTM_model import LSTMnoTF
 import metrics as mtr
@@ -230,6 +231,11 @@ def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning
             print("Early stopping triggered")
             break
     
+    #Memory cleanup
+    del optimizer, criterion, scheduler, early_stopping
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    gc.collect()
     return train_losses, val_losses
 
 
@@ -308,6 +314,15 @@ def train(path, d, t, batch_size, hidden_size, epochs, lr, gamma, nlayers, key =
 
     avg_test_loss = test_loss / len(TestLD)
     print(f"Test avg. loss: {avg_test_loss}")
+
+
+    # --- Memory cleanup to prevent "bad allocation" in grid search ---
+    del model
+    del TrainLD, ValLD, TestLD
+    del TrainDS, ValDS, TestDS
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    gc.collect()
 
     return avg_test_loss, mse, r2_score
 

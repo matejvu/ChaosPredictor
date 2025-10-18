@@ -39,7 +39,7 @@ dt = 0.01
 #       D - dimension of data
 
 #=====================================================
-def TensorTestDS(path, d, t, batch_size, particles = 1, data_len = 1000):
+def TensorTestDS(path, d, t, batch_size, particles = 1, data_len = 1000, norm_scales = None):
     data = np.load(path)
     dt = data["dt"]
     init = data["init"]
@@ -55,6 +55,14 @@ def TensorTestDS(path, d, t, batch_size, particles = 1, data_len = 1000):
     X = data['X'][-1][0:data_len]
     Y = data['Y'][-1][0:data_len]
     Z = data['Z'][-1][0:data_len]
+
+    if(norm_scales is not None):
+        #Normalization
+        min_x, min_y, min_z = norm_scales[0][0], norm_scales[1][0], norm_scales[2][0]
+        max_x, max_y, max_z = norm_scales[0][1], norm_scales[1][1], norm_scales[2][1]
+        X = mtr.Normalize(X, min_x, max_x)
+        Y = mtr.Normalize(Y, min_y, max_y)
+        Z = mtr.Normalize(Z, min_z, max_z)
 
     timeseries = np.stack([X, Y, Z], axis=-1)
 
@@ -123,7 +131,7 @@ def load_model(model_path, isize,hsize, osize, nlayers, timesteps):
     return model
 
 #Testiranjepreciznosti predikcije modela za vremenske intervale od 0 do timestes, u koracima od 50 ako je verbose = True
-def test_prediction(model, data_path, bach_size = 16, timesteps = 100, verbose = False):
+def test_prediction(model, data_path, bach_size = 16, timesteps = 100, verbose = False, norm_scales = None):
 
     model.eval()
 
@@ -133,7 +141,7 @@ def test_prediction(model, data_path, bach_size = 16, timesteps = 100, verbose =
         print(model)
         for i in range(timesteps // 50):
 
-            loader, dataset, D = TensorTestDS(data_path, 3, 50*(i+1), bach_size, 1, 10000)
+            loader, dataset, D = TensorTestDS(data_path, 3, 50*(i+1), bach_size, 1, 10000, norm_scales=norm_scales)
             mse, r2 = one_test_run(model, loader)
             print(f"{50*(i+1)}->")
             results.append([mse, r2])
@@ -154,7 +162,7 @@ def test_prediction(model, data_path, bach_size = 16, timesteps = 100, verbose =
         plt.show()
 
     else:
-        loader, dataset, D = TensorTestDS(data_path, 3, timesteps, bach_size, 1, 10000)
+        loader, dataset, D = TensorTestDS(data_path, 3, timesteps, bach_size, 1, 10000, norm_scales=norm_scales)
         mse, r2 = one_test_run(model, loader)
         print(f"Test R2 Score: {r2}")
         print(f"Test MSE: {mse}")
@@ -281,7 +289,7 @@ def test_structure(model, data_path, literature_LLE, dataset_size=10000):
 
 
 #VIZUALIZATIONS
-def visualize_trajectory(model, data_path, d, h, particles=1):
+def visualize_trajectory(model, data_path, d, h, particles=1, norm_scales = None):
     data = np.load(data_path)
     dt = data["dt"]
     init = data["init"]
@@ -297,6 +305,14 @@ def visualize_trajectory(model, data_path, d, h, particles=1):
     X = data['X'][-1][0:d+h]
     Y = data['Y'][-1][0:d+h]
     Z = data['Z'][-1][0:d+h]
+
+    if(norm_scales is not None):
+        #Normalization
+        min_x, min_y, min_z = norm_scales[0][0], norm_scales[1][0], norm_scales[2][0]
+        max_x, max_y, max_z = norm_scales[0][1], norm_scales[1][1], norm_scales[2][1]
+        X = mtr.Normalize(X, min_x, max_x)
+        Y = mtr.Normalize(Y, min_y, max_y)
+        Z = mtr.Normalize(Z, min_z, max_z)
 
     
     timeseries = np.stack([X, Y, Z], axis=-1)
@@ -331,7 +347,7 @@ def visualize_trajectory(model, data_path, d, h, particles=1):
 
     fig.show()
 
-def visualize_axis(model, data_path, d, h, particles=1):
+def visualize_axis(model, data_path, d, h, particles=1, norm_scales = None):
     data = np.load(data_path)
     dt = data["dt"]
     init = data["init"]
@@ -347,7 +363,14 @@ def visualize_axis(model, data_path, d, h, particles=1):
     X = data['X'][-1][0:d+h]
     Y = data['Y'][-1][0:d+h]
     Z = data['Z'][-1][0:d+h]
-
+    
+    if(norm_scales is not None):
+        #Normalization
+        min_x, min_y, min_z = norm_scales[0][0], norm_scales[1][0], norm_scales[2][0]
+        max_x, max_y, max_z = norm_scales[0][1], norm_scales[1][1], norm_scales[2][1]
+        X = mtr.Normalize(X, min_x, max_x)
+        Y = mtr.Normalize(Y, min_y, max_y)
+        Z = mtr.Normalize(Z, min_z, max_z)
     
     timeseries = np.stack([X, Y, Z], axis=-1)
     init = timeseries[0:d]
@@ -358,6 +381,9 @@ def visualize_axis(model, data_path, d, h, particles=1):
     with torch.no_grad():
         pred = model(torch.FloatTensor(init).unsqueeze(0), future_steps=h)
         pred_np = pred.detach().cpu().numpy() if isinstance(pred, torch.Tensor) else pred
+    
+    mtr.denormalize_3d_array(pred_np[0], norm_scales)
+    mtr.denormalize_3d_array(target, norm_scales)
 
     to_plot = [target, pred_np[0]]
     print(to_plot[0].shape, to_plot[1].shape)
@@ -381,10 +407,12 @@ def visualize_axis(model, data_path, d, h, particles=1):
     plt.tight_layout()
     plt.show()
 
-
 if __name__ == "__main__":
+    
+    norm_scales = mtr.load_norm_scales_from_string("((np.float64(-21.364112300269195), np.float64(22.20895754015633)), (np.float64(-28.24657733906283), np.float64(29.750518195812635)), (np.float64(3.376750699146575), np.float64(56.256212935739285)))")
+    
     model = load_model(
-                        model_path = 'best_model_2.6.pth',
+                        model_path = 'best_model_minmax.pth',
                         isize = 3,
                         hsize = 24,
                         osize = 3,
@@ -392,10 +420,10 @@ if __name__ == "__main__":
                         timesteps = 100)
 
 
-    # visualize_trajectory(model, data_path = 'datasets_npz/lorenz_dataset.npz',
-    #                      d = 4, h = 100)
+    visualize_trajectory(model, data_path = 'datasets_npz/lorenz_dataset.npz',
+                          d = 4, h = 100, norm_scales=norm_scales)
     visualize_axis(model, data_path = 'datasets_npz/lorenz_dataset.npz',
-                         d = 4, h = 700)
+                          d = 4, h = 700, norm_scales=norm_scales)
 
     # test_prediction(    
     #                     model = model,
@@ -405,8 +433,9 @@ if __name__ == "__main__":
     #                     # osize = 3,
     #                     # nlayers = 4,
     #                     bach_size = 1024,
-    #                     timesteps = 200,
-    #                     verbose = True
+    #                     timesteps = 300,
+    #                     verbose = True,
+    #                     norm_scales = norm_scales
     #                 )
 
     # test_structure(
