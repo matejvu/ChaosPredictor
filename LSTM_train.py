@@ -154,7 +154,7 @@ def TDatasetFromSeries(path, d, t, batch_size, particles = 1, data_len = 1000, S
 #       train_losses
 #       val_losses
 #=========================================
-def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning_rate=0.001, gamma=0.95, early_stopping_patience=50):
+def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning_rate=0.001, gamma=0.95, early_stopping_patience=80):
     if torch.cuda.is_available():
         print(f"GPU: {torch.cuda.get_device_name(0)} is available.")
         device = torch.device('cuda')
@@ -164,7 +164,7 @@ def train_lstm_model(model, train_loader, val_loader, file, epochs=100, learning
     model = model.to(device)    
 
     criterion = nn.MSELoss()
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = optim.Adam(model.parameters(), lr=learning_rate, weight_decay=1e-6)
     scheduler = ExponentialLR(optimizer, gamma=gamma)
     early_stopping = mtr.EarlyStopping(patience=early_stopping_patience, path='best_model.pth')
     

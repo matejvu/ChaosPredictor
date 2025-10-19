@@ -54,8 +54,8 @@ class LSTMnoTF(nn.Module):
             # print(f'hidden {hidden.shape}')
 
             #detach zbog gpu memmory leak
-            hidden = hidden.detach()
-            cell = cell.detach()
+            # hidden = hidden.detach()
+            # cell = cell.detach()
 
 
             prediction_next = self.fc(lstm_out)
