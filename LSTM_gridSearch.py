@@ -31,24 +31,24 @@ batches = { 16}
 num_layers = { 7}
 hidden_sizes = { 24, 16}
 learning_rates = { 0.001}
-decays = {0.05, 0.1}
+decays = {0.02}
 
 #=========PARAMETERS==========
 
 lag = 4
 h = 100
-batch_size = 16
+batch_size = 48
 hidden_size = 24
-epochs = 150
+epochs = 180
 lr = 0.001
 gamma = 0.98
 num_layer = 4
-total_data = 16000
+total_data = 50000
 
 #==============================
 if __name__ == "__main__":
     set_random_seed(2154)
-    path = "./datasets_npz/lorenz_dataset.npz"
+    path = "./datasets_npz_awng/lorenz_dataset_40dB.npz"
     losses = {}
     key=''
     time_start = time.time()
@@ -61,7 +61,7 @@ if __name__ == "__main__":
             gamma = 1 - decay
             for lr in learning_rates:
 
-                key = 'h100'+'y'+str(gamma)+'lr'+str(batch_size)
+                key = 'h100'+'y'+str(gamma)+'bch'+str(batch_size)
                     # key = 'lr'+str(lr)+'gam'+str(gamma)
                     
                 loss, mse, r2 = train(

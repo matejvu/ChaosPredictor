@@ -37,7 +37,6 @@ dt = 0.01
 #       loaders - tuple of DataLoaders
 #       datasets - tuple of Datasets
 #       D - dimension of data
-
 #=====================================================
 def TensorTestDS(path, d, t, batch_size, particles = 1, data_len = 1000, norm_scales = None):
     data = np.load(path)
@@ -97,6 +96,17 @@ def TensorTestDS(path, d, t, batch_size, particles = 1, data_len = 1000, norm_sc
     
     return  test_loader, test_dataset, D
 
+def load_model(model_path, isize,hsize, osize, nlayers, timesteps):
+    model = LSTMnoTF(isize, hsize, osize, timesteps, nlayers)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    state_dict = torch.load(model_path, map_location=device)
+    model.load_state_dict(state_dict)
+
+    return model
+
+#PEROFORMANCE TESTING
+#=========================================
 def one_test_run(model, loader):
 
     test_loss = 0.0
@@ -120,15 +130,6 @@ def one_test_run(model, loader):
     mse = np.mean((all_predictions - all_targets) ** 2)
 
     return mse, r2_score
-
-def load_model(model_path, isize,hsize, osize, nlayers, timesteps):
-    model = LSTMnoTF(isize, hsize, osize, timesteps, nlayers)
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    state_dict = torch.load(model_path, map_location=device)
-    model.load_state_dict(state_dict)
-
-    return model
 
 #Testiranjepreciznosti predikcije modela za vremenske intervale od 0 do timestes, u koracima od 50 ako je verbose = True
 def test_prediction(model, data_path, bach_size = 16, timesteps = 100, verbose = False, norm_scales = None):
@@ -162,15 +163,15 @@ def test_prediction(model, data_path, bach_size = 16, timesteps = 100, verbose =
         plt.show()
 
     else:
-        loader, dataset, D = TensorTestDS(data_path, 3, timesteps, bach_size, 1, 10000, norm_scales=norm_scales)
+        loader, dataset, D = TensorTestDS(data_path, 4, timesteps, bach_size, 1, 10000, norm_scales=norm_scales)
         mse, r2 = one_test_run(model, loader)
         print(f"Test R2 Score: {r2}")
         print(f"Test MSE: {mse}")
-    
-#====================================================
 
+#STRUCTURAL TESTING
+#====================================================
 def evolve_model(model, x_t):
-    print('x_t',x_t)
+    # print('x_t',x_t)
     x_t = torch.FloatTensor(x_t)
     x_t = x_t.unsqueeze(0).unsqueeze(0)
     
@@ -181,18 +182,18 @@ def evolve_model(model, x_t):
 def numericalLLE(D, init, time, dt):
     np.set_printoptions(precision=16)
     torch.set_printoptions(precision=16, sci_mode=False)
-    dR0 =  10**(-5)
+    dR0 =  10**(-6)
     #choose rand direction
     random_dir = np.random.randn(D)
     unit_vector = random_dir / np.linalg.norm(random_dir)
     dR = unit_vector * dR0
-    print(dR)
+    # print(dR)
     dR = np.array(dR)
     
     #inital conditions
     R0 = np.array(init)
     R1 = R0 + dR
-    print(R0,R1)
+    # print(R0,R1)
     
     # Store trajectories
     traj0, traj1 = [], []
@@ -209,12 +210,12 @@ def numericalLLE(D, init, time, dt):
             #evolve
             new_R0 = np.array(evolve_model(model, R0))
             new_R1 = np.array(evolve_model(model, R1))
-            print(new_R0)
-            print(new_R1)
+            # print(new_R0)
+            # print(new_R1)
             #find new dif
             R0, R1 = new_R0, new_R1
             dR = R1 - R0
-            print(dR)
+            # print(dR)
             #normalize distance
             R1 = R0 + dR * dR0/np.linalg.norm(dR) 
             #calculate lambda1
@@ -222,28 +223,38 @@ def numericalLLE(D, init, time, dt):
             
             l.append(lambda1/(dt*(t+1)))
     return lambda1/time/dt
-    
-def test_structure(model, data_path, literature_LLE, dataset_size=10000):
-    
+
+def test_structure(model, data_path, literature_LLE, dataset_size=10000, norm_scales=None):
+
     all_predictions = []
     loader, dataset, D = TensorTestDS(data_path, d=4, t=dataset_size, batch_size=1, particles=1, data_len=1+4+dataset_size )
     model.eval()
     
-    # with torch.no_grad():
-    #     for data, target in loader:
+    with torch.no_grad():
+        for data, target in loader:
+            print('data ',data)
             
-    #         predictions = model(data, future_steps=target.shape[1])
-    #         all_predictions.append(predictions.numpy())
+            predictions = model(data, future_steps=target.shape[1])
+            all_predictions.append(predictions.numpy())
     
-    # pred = all_predictions[0]
-    # pred_np = pred.detach().cpu().numpy() if isinstance(pred, torch.Tensor) else pred
+    pred = all_predictions[0]
+    pred_np = pred.detach().cpu().numpy() if isinstance(pred, torch.Tensor) else pred
+
+    print(pred_np.shape)
+    pred_np = mtr.denormalize_3d_array(pred_np[0], norm_scales)
+    rez = pred_np.reshape(-1, 3)
+
+    np.savetxt('output_data.csv', rez, delimiter=',', 
+            header='X,Y,Z', comments='')
+
 
     # Extract the x, y, z arrays
-    pred_np = []
-    data = np.load(data_path)
-    x_t = [ data['X'][-1][0], data['Y'][-1][0],data['Z'][-1][0] ]
-    
-    l1 = numericalLLE(3, x_t, 10, 0.01)
+    #nonononononon
+    # pred_np = []
+    # data = np.load(data_path)
+    # x_t = [ data['X'][-1][0], data['Y'][-1][0],data['Z'][-1][0] ]
+    # # print(x_t)
+    # l1 = numericalLLE(3, x_t, 10000, 0.01)
     
     # model.eval()
     # with torch.no_grad():
@@ -251,9 +262,9 @@ def test_structure(model, data_path, literature_LLE, dataset_size=10000):
     #         x_t = evolve_model(model, x_t)
     #         pred_np.append(x_t)
     
-    # x = pred_np[0, :, 0]  # shape (10000,)
-    # y = pred_np[0, :, 1]  # shape (10000,)
-    # z = pred_np[0, :, 2]  # shape (10000,)
+    x = pred_np[ :, 0]  # shape (10000,)
+    y = pred_np[ :, 1]  # shape (10000,)
+    z = pred_np[ :, 2]  # shape (10000,)
     
     # fig = go.Figure()
     # line_dict = dict(
@@ -280,9 +291,9 @@ def test_structure(model, data_path, literature_LLE, dataset_size=10000):
     # )
 
     # fig.show()
-    # l1 = calcL1(x, y, z, 2)
+    l1 = calcL1(x, y, z, 3)
     print(f'Largest Lyapunov Exponent from model generated data:\t {l1}')
-    print(f'Largest Lyapunov Exponent from literature:\t\t {literature_LLE}')
+    print(f'Largest Lyapunov Exponent from literature:\t\t\t {literature_LLE}')
     #all_predictions = np.concatenate(all_predictions, axis=0)
 
 #====================================================
@@ -329,6 +340,7 @@ def visualize_trajectory(model, data_path, d, h, particles=1, norm_scales = None
     print(to_plot[0].shape, to_plot[1].shape)
     labels = ['Target', 'Predicted']
     color_scale = ['greens', 'oranges']
+    colors = ['blue', 'orange']
 
     fig = go.Figure()
     for i, data in enumerate(to_plot):
@@ -339,8 +351,9 @@ def visualize_trajectory(model, data_path, d, h, particles=1, norm_scales = None
             mode='lines',
             name=labels[i],
             line=dict(
-                color=time_index,  # Map time index to color
-                colorscale=color_scale[i],  # Choose a color scale (e.g., Viridis, Plasma, etc.)
+                color=colors[i],
+                #color=time_index,  # Map time index to color
+                #colorscale=color_scale[i],  # Choose a color scale (e.g., Viridis, Plasma, etc.)
                 width=4
             )
         ))
@@ -388,7 +401,7 @@ def visualize_axis(model, data_path, d, h, particles=1, norm_scales = None):
     to_plot = [target, pred_np[0]]
     print(to_plot[0].shape, to_plot[1].shape)
     labels = ['Target', 'Predicted']
-    color_scale = ['greens', 'oranges']
+    # color_scale = ['greens', 'oranges']
 
     fig, axs = plt.subplots(3, 1, figsize=(10, 15))
 
@@ -409,39 +422,45 @@ def visualize_axis(model, data_path, d, h, particles=1, norm_scales = None):
 
 if __name__ == "__main__":
     
-    norm_scales = mtr.load_norm_scales_from_string("((np.float64(-21.364112300269195), np.float64(22.20895754015633)), (np.float64(-28.24657733906283), np.float64(29.750518195812635)), (np.float64(3.376750699146575), np.float64(56.256212935739285)))")
+    norm_scales = mtr.load_norm_scales_from_string("((np.float64(-22.085555624286354), np.float64(22.20895754015633)), (np.float64(-29.54296537416692), np.float64(29.750518195812635)), (np.float64(3.376750699146575), np.float64(56.256212935739285)))")
     
     model = load_model(
-                        model_path = 'best_model_minmax.pth',
+                        model_path = 'best_model.pth',
                         isize = 3,
                         hsize = 24,
                         osize = 3,
                         nlayers = 4, 
                         timesteps = 100)
+    
+    # print(model)
 
 
     visualize_trajectory(model, data_path = 'datasets_npz/lorenz_dataset.npz',
-                          d = 4, h = 100, norm_scales=norm_scales)
-    visualize_axis(model, data_path = 'datasets_npz/lorenz_dataset.npz',
-                          d = 4, h = 700, norm_scales=norm_scales)
+                          d = 4, h = 10000, norm_scales=norm_scales)
+    # visualize_axis(model, data_path = 'datasets_npz/lorenz_dataset.npz',
+    #                       d = 4, h = 500, norm_scales=norm_scales)
 
-    # test_prediction(    
-    #                     model = model,
-    #                     data_path = 'datasets_npz/lorenz_dataset.npz',
-    #                     # isize = 3,
-    #                     # hsize = 24,
-    #                     # osize = 3,
-    #                     # nlayers = 4,
-    #                     bach_size = 1024,
-    #                     timesteps = 300,
-    #                     verbose = True,
-    #                     norm_scales = norm_scales
-    #                 )
+
+
+    #RAZLIKUJE SE FALSE I TRUE, POPRAVI!!!!
+    test_prediction(    
+                        model = model,
+                        data_path = 'datasets_npz/lorenz_dataset.npz',
+                        # isize = 3,
+                        # hsize = 24,
+                        # osize = 3,
+                        # nlayers = 4,
+                        bach_size = 2048,
+                        timesteps = 500,
+                        verbose = False,
+                        norm_scales = norm_scales
+                    )
 
     # test_structure(
     #     model = model,
     #     data_path = 'datasets_npz/lorenz_dataset.npz',
     #     literature_LLE = 0.9056,
-    #     dataset_size=100
+    #     dataset_size=1000, 
+    #     norm_scales = norm_scales
     # )
     
