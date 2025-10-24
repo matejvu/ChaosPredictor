@@ -142,7 +142,7 @@ def test_prediction(model, data_path, bach_size = 16, timesteps = 100, verbose =
         print(model)
         for i in range(timesteps // 50):
 
-            loader, dataset, D = TensorTestDS(data_path, 3, 50*(i+1), bach_size, 1, 10000, norm_scales=norm_scales)
+            loader, dataset, D = TensorTestDS(data_path, 4, 50*(i+1), bach_size, 1, 10000, norm_scales=norm_scales)
             mse, r2 = one_test_run(model, loader)
             print(f"{50*(i+1)}->")
             results.append([mse, r2])
@@ -336,12 +336,16 @@ def visualize_trajectory(model, data_path, d, h, particles=1, norm_scales = None
         pred = model(torch.FloatTensor(init).unsqueeze(0), future_steps=h)
         pred_np = pred.detach().cpu().numpy() if isinstance(pred, torch.Tensor) else pred
 
+    mtr.denormalize_3d_array(pred_np[0], norm_scales)
+    mtr.denormalize_3d_array(target, norm_scales)
+    
     to_plot = [target, pred_np[0]]
     print(to_plot[0].shape, to_plot[1].shape)
     labels = ['Target', 'Predicted']
     color_scale = ['greens', 'oranges']
     colors = ['blue', 'orange']
-
+    width = [0.5, 4]
+    
     fig = go.Figure()
     for i, data in enumerate(to_plot):
         time_index = np.linspace(0, 1, len(data))
@@ -422,10 +426,10 @@ def visualize_axis(model, data_path, d, h, particles=1, norm_scales = None):
 
 if __name__ == "__main__":
     
-    norm_scales = mtr.load_norm_scales_from_string("((np.float64(-22.085555624286354), np.float64(22.20895754015633)), (np.float64(-29.54296537416692), np.float64(29.750518195812635)), (np.float64(3.376750699146575), np.float64(56.256212935739285)))")
+    norm_scales = mtr.load_norm_scales_from_string("((np.float64(-22.4610450760391), np.float64(22.09340951895048)), (np.float64(-30.073521627789763), np.float64(29.457595017326753)), (np.float64(2.7324688770415055), np.float64(56.7997094482083)))")
     
     model = load_model(
-                        model_path = 'best_model.pth',
+                        model_path = './training_plots/40dB/lorenz_40dB.pth',
                         isize = 3,
                         hsize = 24,
                         osize = 3,
@@ -435,32 +439,33 @@ if __name__ == "__main__":
     # print(model)
 
 
-    visualize_trajectory(model, data_path = 'datasets_npz/lorenz_dataset.npz',
-                          d = 4, h = 10000, norm_scales=norm_scales)
-    # visualize_axis(model, data_path = 'datasets_npz/lorenz_dataset.npz',
+    visualize_trajectory(model, data_path = 'datasets_npz_awng/lorenz_dataset_40dB.npz',
+                          d = 4, h = 1000, norm_scales=norm_scales)
+    # visualize_axis(model, data_path = 'datasets_npz_awng/lorenz_dataset_0dB.npz',
     #                       d = 4, h = 500, norm_scales=norm_scales)
 
 
 
-    #RAZLIKUJE SE FALSE I TRUE, POPRAVI!!!!
-    test_prediction(    
-                        model = model,
-                        data_path = 'datasets_npz/lorenz_dataset.npz',
-                        # isize = 3,
-                        # hsize = 24,
-                        # osize = 3,
-                        # nlayers = 4,
-                        bach_size = 2048,
-                        timesteps = 500,
-                        verbose = False,
-                        norm_scales = norm_scales
-                    )
+    # RAZLIKUJE SE FALSE I TRUE, POPRAVI!!!!  MYD popravljeno
+    # test_prediction(    
+    #                     model = model,
+    #                     data_path = 'datasets_npz_awng/lorenz_dataset_10dB.npz',
+    #                     # isize = 3,
+    #                     # hsize = 24,
+    #                     # osize = 3,
+    #                     # nlayers = 4,
+    #                     bach_size = 2048,
+    #                     timesteps = 500,
+    #                     verbose = True,
+    #                     norm_scales = norm_scales
+    #                 )
 
     # test_structure(
     #     model = model,
-    #     data_path = 'datasets_npz/lorenz_dataset.npz',
+    #     data_path = 'datasets_npz_awng/lorenz_dataset_10dB.npz',
     #     literature_LLE = 0.9056,
-    #     dataset_size=1000, 
+    #     dataset_size=10000, 
     #     norm_scales = norm_scales
     # )
+    # print('10dB!!')
     

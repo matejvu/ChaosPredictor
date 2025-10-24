@@ -81,9 +81,9 @@ def plot_dataset(path, particles=1, time=-1):
 
 if __name__ == "__main__":
     # plot_dataset("./datasets_npz/clifford_dataset.npz", particles=1, time = 50000 )
-    plot_dataset("./datasets_npz/lorenz_dataset.npz", particles=1, time=16000)
+    # plot_dataset("./datasets_npz/lorenz_dataset.npz", particles=1, time=16000)
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_40dB.npz", particles=3, time=3000)
-    # plot_dataset("./datasets_npz_awng/lorenz_dataset_30dB.npz", particles=3, time=3000)
+    plot_dataset("./datasets_npz_awng/lorenz_dataset_30dB.npz", particles=3, time=3000)
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_20dB.npz", particles=3, time=3000)
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_10dB.npz", particles=3, time=3000)
     # plot_dataset("./datasets_npz_awng/lorenz_dataset_0dB.npz", particles=3, time=3000)
