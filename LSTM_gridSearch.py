@@ -47,8 +47,8 @@ total_data = 50000
 
 #==============================
 if __name__ == "__main__":
-    set_random_seed(2154)
-    path = "./datasets_npz/lorenz_dataset.npz"
+    set_random_seed(2152)
+    path = "./datasets_npz_awng/lorenz_dataset_50dB.npz"
     losses = {}
     key=''
     time_start = time.time()

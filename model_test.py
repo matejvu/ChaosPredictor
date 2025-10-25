@@ -426,10 +426,10 @@ def visualize_axis(model, data_path, d, h, particles=1, norm_scales = None):
 
 if __name__ == "__main__":
     
-    norm_scales = mtr.load_norm_scales_from_string("((np.float64(-22.4610450760391), np.float64(22.09340951895048)), (np.float64(-30.073521627789763), np.float64(29.457595017326753)), (np.float64(2.7324688770415055), np.float64(56.7997094482083)))")
+    norm_scales = mtr.load_norm_scales_from_string("((np.float64(-22.31768701015716), np.float64(21.98491461083047)), (np.float64(-29.996668351951758), np.float64(29.35203774072683)), (np.float64(3.09863939173088), np.float64(56.55300955113958)))")
     
     model = load_model(
-                        model_path = './training_plots/40dB/lorenz_40dB.pth',
+                        model_path = './training_plots/50dB/lorenz_50dB.pth',
                         isize = 3,
                         hsize = 24,
                         osize = 3,
@@ -439,9 +439,9 @@ if __name__ == "__main__":
     # print(model)
 
 
-    visualize_trajectory(model, data_path = 'datasets_npz_awng/lorenz_dataset_40dB.npz',
-                          d = 4, h = 1000, norm_scales=norm_scales)
-    # visualize_axis(model, data_path = 'datasets_npz_awng/lorenz_dataset_0dB.npz',
+    visualize_trajectory(model, data_path = 'datasets_npz_awng/lorenz_dataset_50dB.npz',
+                          d = 4, h = 10000, norm_scales=norm_scales)
+    # visualize_axis(model, data_path = 'datasets_npz/lorenz_dataset.npz',
     #                       d = 4, h = 500, norm_scales=norm_scales)
 
 
@@ -449,7 +449,7 @@ if __name__ == "__main__":
     # RAZLIKUJE SE FALSE I TRUE, POPRAVI!!!!  MYD popravljeno
     # test_prediction(    
     #                     model = model,
-    #                     data_path = 'datasets_npz_awng/lorenz_dataset_10dB.npz',
+    #                     data_path = 'datasets_npz_awng/lorenz_dataset_50dB.npz',
     #                     # isize = 3,
     #                     # hsize = 24,
     #                     # osize = 3,
@@ -462,10 +462,10 @@ if __name__ == "__main__":
 
     # test_structure(
     #     model = model,
-    #     data_path = 'datasets_npz_awng/lorenz_dataset_10dB.npz',
+    #     data_path = 'datasets_npz/lorenz_dataset.npz',
     #     literature_LLE = 0.9056,
     #     dataset_size=10000, 
     #     norm_scales = norm_scales
     # )
-    # print('10dB!!')
+    # print('infdB!!')
     

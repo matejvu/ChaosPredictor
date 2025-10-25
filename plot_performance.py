@@ -1,5 +1,18 @@
 
 data_array = [
+    "timesteps: 50	MSE: 6.60360892652534e-05	R2:0.9976076253224164\
+	timesteps: 100	MSE: 0.00011072627967223525	R2:0.9959983476437628\
+	timesteps: 150	MSE: 0.0005478214006870985	R2:0.9802505299448967\
+	timesteps: 200	MSE: 0.0015165075892582536	R2:0.9453950524330139\
+	timesteps: 250	MSE: 0.003258726792410016	R2:0.88263388723135\
+	timesteps: 300	MSE: 0.005689236801117659	R2:0.7950379550457001\
+	timesteps: 350	MSE: 0.00889262743294239	R2:0.6793215870857239\
+	timesteps: 400	MSE: 0.0124748470261693	R2:0.5492696464061737\
+	timesteps: 450	MSE: 0.015817048028111458	R2:0.42771822214126587\
+	timesteps: 500	MSE: 0.018778882920742035	R2:0.31997841596603394\
+",
+
+
     "timesteps: 50	MSE: 0.0001895561144920066	R2:0.9936580387875438\
 	timesteps: 100	MSE: 0.0006198846967890859	R2:0.9792690295726061\
 	timesteps: 150	MSE: 0.002331230090931058	R2:0.9220769479870796\
@@ -68,7 +81,7 @@ data_array = [
 "
 ]
 
-index_array = ['50dB', '40dB', '30dB', '20dB', '10dB', '0dB']
+index_array = ["$\\infty$dB",'50dB', '40dB', '30dB', '20dB', '10dB', '0dB']
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -76,6 +89,61 @@ import numpy as np
 LLE = 0.9056
 tL = 1/LLE
 dt = 0.01
+
+
+def plotNoisePerformance():
+    fixed_timestep = 100
+    r2_scores_at_fixed_timestep = []
+    max_timesteps_above_threshold = []
+    threshold = 0.55
+
+    # Create a figure with 1 row and 2 columns
+    fig, axs = plt.subplots(1, 2, figsize=(15, 6))
+
+    for i, data in enumerate(data_array):
+        timesteps = []
+        mse_values = []
+        r2_values = []
+
+        parts = data.strip().split('\t')
+        for j in range(0, len(parts), 3):  # Step by 3 (timestep, MSE, R2)
+            timestep = int(parts[j].split(': ')[1])  # Extract timesteps
+            mse = float(parts[j + 1].split(': ')[1])  # Extract MSE
+            r2 = float(parts[j + 2].split(':')[1])  # Extract R2
+
+            timesteps.append(timestep)
+            mse_values.append(mse)
+            r2_values.append(r2)
+
+        # Extract R2 score for the fixed timestep
+        if fixed_timestep in timesteps:
+            index = timesteps.index(fixed_timestep)  # Find the index of the fixed timestep
+            r2_scores_at_fixed_timestep.append(r2_values[index])  # Append the corresponding R2 value
+
+        # Find the largest timestep where R2 > threshold
+        max_timestep = max([t for t, r2 in zip(timesteps, r2_values) if r2 > threshold], default=0)
+        max_timesteps_above_threshold.append(max_timestep)
+
+    # Plot R2 scores against noise levels (subplot 1)
+    axs[0].plot(index_array, r2_scores_at_fixed_timestep, marker='o', linestyle='-', color='b', label=f'$R^2$ u koraku {fixed_timestep}')
+    axs[0].set_xlabel('Noise Level')
+    axs[0].set_ylabel('$R^2$ Score')
+    # axs[0].set_title(f'$R^2$ Score vs Noise Level at Timestep {fixed_timestep}')
+    axs[0].grid(True)
+    axs[0].legend()
+
+    # Plot max timesteps above threshold against noise levels (subplot 2)
+    axs[1].plot(index_array, max_timesteps_above_threshold, marker='s', linestyle='-', color='g', label=f'Max vremenski korak sa $R^2 > {threshold}$')
+    axs[1].set_xlabel('Noise Level')
+    axs[1].set_ylabel('Max Timestep')
+    # axs[1].set_title(f'Max Timestep with $R^2 > {threshold}$ vs Noise Level')
+    axs[1].grid(True)
+    axs[1].legend()
+
+    # Adjust layout and save the figure
+    plt.tight_layout()
+    plt.savefig('r2_vs_noise_with_max_timesteps.png')
+    plt.show()
 
 if __name__ == "__main__":
     plt.figure(figsize=(10, 6))
@@ -98,7 +166,7 @@ if __name__ == "__main__":
         time = [x*dt/tL for x in timesteps]
 
         # plt.plot(timesteps, mse_values, marker='o', linestyle='-',label=f'MSE - {index_array[i]}')
-        plt.plot(timesteps, r2_values, marker='x', linestyle='--', label=f'{index_array[i]}')
+        plt.plot(time, r2_values, marker='x', linestyle='--', label=f'{index_array[i]}')
 
     plt.xlabel('time [$t_L$]')
     plt.ylabel('$R^2$ Score')
@@ -108,3 +176,6 @@ if __name__ == "__main__":
     plt.tight_layout()
     plt.savefig('model_performance.png')
     plt.show()
+
+
+    plotNoisePerformance()
