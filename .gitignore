@@ -9,6 +9,9 @@ datasets_npz/
 # Output
 *.txt
 
+# Requirements
+!requirements.txt
+
 # Dataset file types (catch any stray files of these types)
 *.h5
 *.npz

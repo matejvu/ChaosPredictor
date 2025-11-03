@@ -1,5 +1,4 @@
-# Predicting Chaotic Systems with Deep Learning  
-**Investigating LSTM Robustness to Noise without Teacher Forcing**
+# Predicting Chaotic Systems with Deep Learning: Investigating LSTM Robustness to Noise without Teacher Forcing  
 
 **Author:** Matej Vučković  
 **Mentor:** Prof. Goran Kvaščev  
@@ -32,34 +31,32 @@ It focuses on **noise robustness** and training **without teacher forcing (no-TF
 
 ---
 
-## 📁 Repository Structure  
-├── attractors_catalog.ipynb # Interactive attractor generation notebook
+## 📁 Repository Overview
+	attractors_catalog.ipynb # Interactive attractor generation notebook
+	
+	attractors_catalog.py # Python module for generating chaotic systems
 
-├── attractors_catalog.py # Python module for generating chaotic systems
+	dataset_generator.py # Synthetic dataset creation
 
-├── dataset_generator.py # Synthetic dataset creation
+	dataset_awgn.py # Adds Gaussian noise to datasets
 
-├── dataset_awgn.py # Adds Gaussian noise to datasets
+	metrics.py # Metrics: MSE, R², Lyapunov exponents
 
-├── metrics.py # Metrics: MSE, R², Lyapunov exponents
+	LSTM_model.py # LSTM network definition (no-TF)
 
-├── LSTM_model.py # LSTM network definition (no-TF)
+	LSTM_gridSearch.py # Hyperparameter search
 
-├── LSTM_gridSearch.py # Hyperparameter search
+	LSTM_train.py # Training pipeline
 
-├── LSTM_train.py # Training pipeline
+	LSTM_evaluate.py # Evaluation and visualization
 
-├── LSTM_evaluate.py # Evaluation and visualization
+	LLE_calculator.py # Lyapunov exponent estimator
 
-├── LLE_calculator.py # Lyapunov exponent estimator
+	/models # Trained model checkpoints (.pth)
 
-├── /models # Trained model checkpoints (.pth)
+	/data # Generated datasets (.npz)
 
-├── /data # Generated datasets (.npz)
-
-├── /results # Output plots and metrics
-
-└── README.md # Project documentation
+	/results # Output plots and metrics
 
 ---
 
@@ -97,12 +94,12 @@ It focuses on **noise robustness** and training **without teacher forcing (no-TF
 
 | SNR (dB) | R² (approx.) | Chaotic Structure Preserved | Notes |
 |-----------|---------------|-----------------------------|-------|
-| ∞ (ideal) | 0.996 | ✅ Yes | Perfect reconstruction |
-| 50 | 0.995 | ✅ Yes | Stable predictions |
-| 40 | 0.992 | ✅ Yes | Slight deviation |
-| 30 | 0.976 | ⚠️ Partial | Reduced divergence |
-| 20 | 0.94  | ❌ No | Lost chaotic behavior |
-| 10–0 | <0.9 | ❌ No | Model fails to generalize |
+| ∞ (ideal) | 0.998 | ✅ Yes | Perfect reconstruction |
+| 50 | 0.979 | ✅ Yes | Stable predictions |
+| 40 | 0.976 | ✅ Yes | Slight deviation |
+| 30 | 0.943 | ⚠️ Partial | Reduced divergence |
+| 20 | 0.851  | ❌ No | Lost chaotic behavior |
+| 10–0 | <0.53 | ❌ No | Model fails to generalize |
 
 LSTM models successfully predict chaotic dynamics for **several Lyapunov times**, maintaining both **trajectory accuracy** and **global attractor geometry** under moderate noise levels.
 
@@ -126,15 +123,11 @@ python LSTM_evaluate.py --model models/lorenz_lstm.pth
 
 ## 🧮 Dependencies
 
-Python ≥ 3.10
-
-PyTorch ≥ 2.0
-
-NumPy
-
-Matplotlib
-
-SciPy
+- Python ≥ 3.9
+- PyTorch ≥ 2.0
+- Plotly ≥ 5.9 
+- Matplotlib
+- NumPy
 
 Install all requirement
 ```bash
