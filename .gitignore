@@ -7,7 +7,6 @@ datasets_h5/
 datasets_npz/
 
 # Output
-*.png
 *.txt
 
 # Dataset file types (catch any stray files of these types)
@@ -24,9 +23,10 @@ datasets_npz/
 *.bib
 *.svg
 
-#lr alg directory
-githubOnogLika/
+#trash directory
+trash/
+
 
 #tmp from LLE_from_data
-tmp.npy
+*.npy
 *.pth
