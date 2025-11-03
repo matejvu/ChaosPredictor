@@ -30,3 +30,6 @@ trash/
 #tmp from LLE_from_data
 *.npy
 *.pth
+
+#notebooks
+*.ipynb
